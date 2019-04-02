@@ -178,6 +178,12 @@ if not output_file:
     output_file = stdout
 
 def parse_number(string):
+    """
+    Parse the string as a number. 
+
+    Accepts hexadecimal, decimal, binary and taggs, which
+    are later parsed to a number when all tags are known.
+    """
     if string[0] == "@":
         return string[1:] # It will be a number...
     try:
@@ -190,6 +196,9 @@ def parse_number(string):
         raise SyntaxError("{} is not a valid number.".format(string))
 
 def parse_operand(operand):
+    """
+    Parse out the argument of the operation.
+    """
     if operand[0] == '*':
         if operand[1] == '*':
             n = parse_number(operand[2:])
@@ -198,22 +207,29 @@ def parse_operand(operand):
             n = parse_number(operand[1:])
             mode = ADDRESS_MODES["DIRECT"]
         if type(n) == str or (n & 0xFF) == n:
-            return True, n, mode
+            return n, mode
         raise SyntaxError("{} does not fit in 16 bits.".format(n))
     if operand[0] == '[' and operand[-1] == ']':
-        return True, parse_number(operand[1:-1]), ADDRESS_MODES["INDEXED"]
+        return parse_number(operand[1:-1]), ADDRESS_MODES["INDEXED"]
     n = parse_number(operand)
     if type(n) == str or (n & 0xFFFF) == n:
-        return True, n, ADDRESS_MODES["IMMEDIATE"]
+        return n, ADDRESS_MODES["IMMEDIATE"]
     raise SyntaxError("{} does not fit in 32 bits.".format(n))
 
 def parse_instruction(args):
+    """ 
+    Parse an assembly instruction into an instruction object.
+    """
+    if len(args) < 3:
+        raise SyntaxError("Not enough arguments.")
+    if len(args) > 3:
+        raise SyntaxError("Trash at end of line \"{}\"".format(" ".join(args[3:])))
     opcode = OPCODE_TABLE[args[0]]
-    register = REGISTERS[args[1]]
-    success, address, mode = parse_operand(args[2])
-    if success:
-        return Instruction(opcode, register, mode, address)
-    return False
+    if args[1].upper() not in REGISTERS:
+        raise SyntaxError("Invalid register name" + args[1])
+    register = REGISTERS[args[1].upper()]
+    address, mode = parse_operand(args[2])
+    return Instruction(opcode, register, mode, address)
 
 
 success = True
