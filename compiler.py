@@ -24,6 +24,8 @@
 #   P - Operand (only there if M is 01)
 #
 
+from sys import stdin, stdout, argv, exit
+
 class Data:
     def __init__(self, string):
         self.length = len(string) // 4
@@ -43,8 +45,12 @@ class Data:
         """
         Convert the instruction to a binary string.
         """
-        code = [bin(x)[2:] for x in self.data]
-        return "".join(('0' * (WORD_SIZE - len(x))) + x for x in code)
+        result = []
+        for x in self.data:
+            c = bin(x)[2:]
+            result.append(('0' * (4 - len(c))) + c)
+        return "".join(result)
+
 
 class Instruction:
     """
@@ -105,9 +111,10 @@ class Instruction:
         if self.length == 1:
             length = WORD_SIZE // 1
         else:
-            length = WORD_SIZE // 2
+            length = WORD_SIZE * 2
         code = bin(self.instruction)[2:]
         return ('0' * (length - len(code))) + code
+
 
 OPCODE_TABLE = {   
     "LOAD"  : 0b0000,
@@ -136,8 +143,6 @@ REGISTERS = {
 }
 
 WORD_SIZE = 16
-
-from sys import stdin, stdout, argv, exit
 
 output_format = "hex"
 input_file = False
@@ -232,83 +237,88 @@ def parse_instruction(args):
     return Instruction(opcode, register, mode, address)
 
 
-success = True
-line_number = 0 # The line in the source file
-word = 0 # The current word
-instructions = []
-tag_table = {}
-for line in input_file:
-    line_number += 1
-    if "#" in line:
-        line = line[:line.index("#")]
-    args = line.replace(",", "").replace("_", "").strip().split()
-    if not args: continue
-    OP = args[0].upper()
-    if OP in OPCODE_TABLE:
-        # It's an op!
-        try:
-            inst = parse_instruction(args)
-            instructions.append(inst)
-            word += inst.length
-        except SyntaxError as e:
-            success = False
-            print("ERROR:{} {}".format(line_number, str(e)))
-    elif OP.endswith(":"):
-        # Tags for jumps
-        tag = args[0][:-1]
-        if tag not in tag_table:
-            tag_table[tag] = word
+def main():
+    success = True
+    line_number = 0 # The line in the source file
+    word = 0 # The current word
+    instructions = []
+    tag_table = {}
+
+    for line in input_file:
+        line_number += 1
+        if "#" in line:
+            line = line[:line.index("#")]
+        args = line.replace(",", "").replace("_", "").strip().split()
+        if not args: continue
+        OP = args[0].upper()
+        if OP in OPCODE_TABLE:
+            # It's an op!
+            try:
+                inst = parse_instruction(args)
+                instructions.append(inst)
+                word += inst.length
+            except SyntaxError as e:
+                success = False
+                print("ERROR:{} {}".format(line_number, str(e)))
+        elif OP.endswith(":"):
+            # Tags for jumps
+            tag = args[0][:-1]
+            if tag not in tag_table:
+                tag_table[tag] = word
+            else:
+                print("ERROR:{} Multiple instances of tag \"{}\"".format(line_number, tag))
+                success = False
+        elif OP == ".":
+            # Data fields
+            data = Data("".join(args[1:]).replace(" ", "").replace("\t", ""))
+            instructions.append(data)
+            word += data.length
         else:
-            print("ERROR:{} Multiple instances of tag \"{}\"".format(line_number, tag))
+            print("ERROR:{} Unknown symbol \"{}\"".format(line_number, line))
             success = False
-    elif OP == ".":
-        # Data fields
-        data = Data("".join(args[1:]).replace(" ", "").replace("\t", ""))
-        instructions.append(data)
-        word += data.length
+
+    for instruction in instructions:
+        try:
+            if type(instruction) == Instruction:
+                instruction.bake(tag_table)
+        except SyntaxError as e:
+            print("LINKING ERROR: {}".format(e))
+            success = False
+
+    if not success:
+        return 1
+
+    def print_as_hex(out, inst, newlines):
+        string = instruction.to_hex()
+        if newlines:
+            while string:
+                out.write(string[:WORD_SIZE // 4])
+                out.write("\n")
+                string = string[WORD_SIZE // 4:]
+        out.write(string)
+
+    def print_as_bin(out, inst, newlines):
+        string = instruction.to_bin()
+        if newlines:
+            while string:
+                out.write(string[:WORD_SIZE])
+                out.write("\n")
+                string = string[WORD_SIZE:]
+        out.write(string)
+
+    if output_format == "hex":
+        print_func = print_as_hex
     else:
-        print("ERROR:{} Unknown symbol \"{}\"".format(line_number, line))
-        success = False
+        print_func = print_as_bin 
 
-for instruction in instructions:
-    try:
-        if type(instruction) == Instruction:
-            instruction.bake(tag_table)
-    except SyntaxError as e:
-        print("LINKING ERROR: {}".format(e))
-        success = False
+    for instruction in instructions:
+        print_func(output_file, instruction, newlines)
 
-if not success:
-    exit(1)
+    output_file.flush()
+    output_file.close()
 
-def print_as_hex(out, inst, newlines):
-    string = instruction.to_hex()
-    if newlines:
-        while string:
-            out.write(string[:WORD_SIZE // 4])
-            out.write("\n")
-            string = string[WORD_SIZE // 4:]
-    out.write(string)
 
-def print_as_bin(out, inst, newlines):
-    string = instruction.to_bin()
-    if newlines:
-        while string:
-            out.write(string[:WORD_SIZE])
-            out.write("\n")
-            string = string[WORD_SIZE:]
-    out.write(string)
-
-if output_format == "hex":
-    print_func = print_as_hex
-else:
-    print_func = print_as_bin 
-
-for instruction in instructions:
-    print_func(output_file, instruction, newlines)
-output_file.flush()
-output_file.close()
-
-exit(0)
+if __name__ == "__main__":
+    exit(main())
         
 
