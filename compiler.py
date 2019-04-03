@@ -125,7 +125,7 @@ OPCODE_TABLE = {
     "LSR"   : 0b0101,
     "BRA"   : 0b0110,
     "BNE"   : 0b0111,
-    "NOP"   : 0b0000,
+    "HALT"  : 0b1111,
 }
 
 ADDRESS_MODES = {
@@ -144,9 +144,9 @@ REGISTERS = {
 
 WORD_SIZE = 16
 
-output_format = "hex"
 input_file = False
 output_file = False
+output_format = "hex"
 newlines = True
 
 #
@@ -181,6 +181,10 @@ if not input_file:
 
 if not output_file:
     output_file = stdout
+
+#
+# Parser 
+#
 
 def parse_number(string):
     """
@@ -244,6 +248,7 @@ def main():
     instructions = []
     tag_table = {}
 
+    # Parse
     for line in input_file:
         line_number += 1
         if "#" in line:
@@ -277,6 +282,7 @@ def main():
             print("ERROR:{} Unknown symbol \"{}\"".format(line_number, line))
             success = False
 
+    # Link instructions
     for instruction in instructions:
         try:
             if type(instruction) == Instruction:
@@ -285,9 +291,11 @@ def main():
             print("LINKING ERROR: {}".format(e))
             success = False
 
+    # Exit on error
     if not success:
         return 1
 
+    # Write out the program
     def print_as_hex(out, inst, newlines):
         string = instruction.to_hex()
         if newlines:
@@ -316,6 +324,7 @@ def main():
 
     output_file.flush()
     output_file.close()
+    return 0
 
 
 if __name__ == "__main__":
