@@ -271,8 +271,15 @@ fun parseInstructions(fileData: String): ShortArray {
         val commentIndex = lines[index].indexOf("#")
         if(commentIndex > 0)
             lines[index] = lines[index].substring(0, commentIndex)
-        val insn = parseInstruction(lines[index], unit)
-        if(insn != null) unit.registerInstruction(insn)
+        try{
+            val insn = parseInstruction(lines[index], unit)
+            if(insn != null) unit.registerInstruction(insn)
+        }catch(e: Exception){
+            print("An error occurred when compiling (line $index)")
+            val message = e.message
+            if(message != null) print(":\n\t$message")
+            println()
+        }
     }
     return unit.compile()
 }
@@ -291,7 +298,7 @@ fun main(args: Array<String>){
 		System.err.println("Given file doesn't exist!")
 		System.exit(-2)
 	}
-    for(insn in parseInstructions("LOAD GR0,0xFF"))
+    for(insn in parseInstructions(file.readText()))
         println(insn.toUHex())
 }
 
