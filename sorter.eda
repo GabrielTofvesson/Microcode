@@ -1,5 +1,5 @@
 # Beatuifull
-LOAD GR0 *0x00DF # I
+LOAD GR0 0x00DF # I
 
 OUTER:
 ADD GR0 1
@@ -9,7 +9,7 @@ BEQ @END
 STORE GR0 *@I
 LOAD GR2 **@I
 
-STORE GR1 *@I
+LOAD GR1 *@I
 
 INNER:
 ADD GR1 1
