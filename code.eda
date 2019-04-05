@@ -27,5 +27,4 @@ STORE GR1, *0xFF
 
 HALT GR0, *0
 
-STORE GR1, *0xFF
 
