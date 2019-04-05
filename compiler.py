@@ -130,6 +130,7 @@ OPCODE_TABLE = {
     "CMP"   : 0b1000,
     "BEQ"   : 0b1001,
     "BLT"   : 0b1010,
+    "CMI"   : 0b1011,
     "HALT"  : 0b1111,
 }
 
@@ -242,9 +243,24 @@ def parse_instruction(args):
         return parse_jump(args)
     if args[0] in ["CMP"]:
         return parse_dual_registers(args)
+    if args[0] in ["CMI"]:
+        return parse_compare_imediate(args)
     else:
         print("Foregotten instruction: ", args[0])
         assert False
+
+def parse_compare_imediate(args):
+    if len(args) < 3:
+        raise SyntaxError("Not enough arguments.")
+    if len(args) > 3:
+        raise SyntaxError("Trash at end of line \"{}\"".format(" ".join(args[3:])))
+    opcode = OPCODE_TABLE[args[0]]
+    if args[1].upper() not in REGISTERS:
+        raise SyntaxError("Invalid register name" + args[1])
+    register = REGISTERS[args[1].upper()]
+    address, mode = parse_operand(args[2])
+    return Instruction(opcode, register, ADDRESS_MODES["DIRECT"], address)
+    
 
 def parse_tripple_instuction(args):
     if len(args) < 3:
@@ -273,9 +289,11 @@ def parse_dual_registers(args):
     if len(args) > 3:
         raise SyntaxError("Trash at end of line \"{}\"".format(" ".join(args[3:])))
     opcode = OPCODE_TABLE[args[0]]
+    if args[1].upper() not in REGISTERS:
+        raise SyntaxError("Invalid register name" + args[1])
     register_a = REGISTERS[args[1].upper()]
     register_b = REGISTERS[args[2].upper()]
-    return Instruction(opcode, register_a, register_b, 0, 1)
+    return Instruction(opcode, register_a, register_b, 0)
 
 def main():
     success = True

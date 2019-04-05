@@ -1,0 +1,57 @@
+# Beatuifull
+LOAD GR0 *0x00E0 # I
+LOAD GR1 *0x00E0 # J
+
+OUTER:
+CMI GR0 0xFF
+BEQ @END
+
+STORE GR0 *@I
+LOAD GR2 **@I
+
+STORE GR1 *@I
+
+INNER:
+ADD GR1 1
+STORE GR1 *@J
+LOAD GR3 **@J
+
+CMP GR2 GR3
+BLT @INNER
+
+STORE GR2 **@J
+STORE GR3 **@I
+LOAD GR2 **@I
+CMI GR1 0xFF
+BNE @INNER 
+BRA @OUTER
+
+END:
+HALT
+
+# for (int i = 0; i < length; i++)
+# {
+# 	for (int j = i; j < length;)
+# 	{
+#		j++
+# 		if (data[i] < data[j])
+# 		{
+# 			int a = data[i];
+# 			data[i] = data[j];
+# 			data[j] = a;
+# 		}
+# 	}
+# }
+
+
+
+I:
+.	0020
+J:
+.	0000
+A: # Pointer to value at I
+.   0000
+B: # Pointer to value at J
+.   0000
+LAST:
+.	00FF
