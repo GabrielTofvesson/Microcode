@@ -1,0 +1,3 @@
+LOAD GR0, 0xFF # Put FF into GR0
+CMP GR0, GR2
+HALT
