@@ -18,38 +18,44 @@ enum class Mode(val id: Int) {
 	DIRECT(0), IMMEDIATE(1), INDIRECT(2), INDEXED(3)
 }
 
-interface Instruction {
-	fun getData(insns: Iterable<Instruction>): Short
+abstract class Instruction(val words: Int) {
+	fun getData(insns: Iterable<Instruction>): ShortArray
 }
 
-class Label(val name: String): Instruction {
-	override fun getData(insns: Iterable<Instruction>) = 0.toShort()
+class Label(val name: String): Instruction(0) {
+	override fun getData(insns: Iterable<Instruction>) = ShortArray(0)
 }
 
-class Immediate(val data: Short): Instruction {
-	override fun getData(insns: Iterable<Instruction>) = data
+class Immediate(val data: Short): Instruction(1) {
+	override fun getData(insns: Iterable<Instruction>) = ShortArray(1){ data }
 }
 
-class Operation(val code: OpCode, val reg: Int, val m: Mode, val adr: AddressReference): Instruction {
+class Operation(val code: OpCode, val reg: Int, val m: Mode, val adr: AddressReference, val immediate: Immediate? = null): Instruction(if(m == Mode.IMMEDIATE) 2 else 1) {
 	constructor(val code: OpCode): this(code, 0, Mode.DIRECT, AddressReference(0))
+
+    init {
+        if(m == Mode.IMMEDIATE && immediate == null)
+            throw IllegalArgumentException("No immediate argument passed!")
+    }
 	
 	override fun getData(insns: Iterable<Instruction>): Short {
-		return code.opcode
-			.and(0b1111)
-			.shl(12)
-			.or(
-				if(code.useReg) reg.and(0b11).shl(10)
-				else 0
-			)
-			.or(
-				if(code.useM) m.id.and(0b11).shl(8)
-				else 0
-			)
-			.or(
-				if(code.useADR) adr.getAddress(insns).and(0b11111111)
-				else 0
-			)
-			.toShort()
+		return shortArrayOf(code.opcode
+    			.and(0b1111)
+    			.shl(12)
+    			.or(
+    				if(code.useReg) reg.and(0b11).shl(10)
+    				else 0
+    			)
+    			.or(
+    				if(code.useM) m.id.and(0b11).shl(8)
+    				else 0
+    			)
+    			.or(
+    				if(code.useADR) adr.getAddress(insns).and(0b11111111)
+    				else 0
+    			)
+    			.toShort()
+            )
 	}
 }
 
@@ -89,4 +95,6 @@ fun main(args: Array<String>){
 
 }
 
-
+fun Array<Instruction>.compile(): Array<Short> {
+    
+}

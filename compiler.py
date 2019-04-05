@@ -3,14 +3,16 @@
 # Compiles ED-Assembly to Machinecode
 #
 
-# LOAD    GRx, M, ADR
-# STORE   GRx, M, ADR
-# ADD     GRx, M, ADR
-# SUB     GRx, M, ADR
-# AND     GRx, M, ADR
-# LSR     GRx, M, Y # STEG
+# LOAD    GRx, ADR
+# STORE   GRx, ADR
+# ADD     GRx, ADR
+# SUB     GRx, ADR
+# AND     GRx, ADR
+# LSR     GRx, Y # STEG
 # BRA     ADR
 # BNE     ADR
+# BEQ     ADR
+# CMP     GRx, GRy
 
 #
 #   One machine instruction
@@ -127,6 +129,7 @@ OPCODE_TABLE = {
     "BNE"   : 0b0111,
     "CMP"   : 0b1000,
     "BEQ"   : 0b1001,
+    "BLT"   : 0b1010,
     "HALT"  : 0b1111,
 }
 
@@ -231,6 +234,19 @@ def parse_instruction(args):
     """ 
     Parse an assembly instruction into an instruction object.
     """
+    if args[0] in ["HALT"]:
+        return Instruction(OPCODE_TABLE[args[0]], 0, 0, 0)
+    if args[0] in ["LOAD", "STORE", "ADD", "SUB", "AND", "LSR"]:
+        return parse_tripple_instuction(args)
+    if args[0] in ["BRA", "BNE", "BEQ", "BLT"]:
+        return parse_jump(args)
+    if args[0] in ["CMP"]:
+        return parse_dual_registers(args)
+    else:
+        print("Foregotten instruction: ", args[0])
+        assert False
+
+def parse_tripple_instuction(args):
     if len(args) < 3:
         raise SyntaxError("Not enough arguments.")
     if len(args) > 3:
@@ -242,6 +258,24 @@ def parse_instruction(args):
     address, mode = parse_operand(args[2])
     return Instruction(opcode, register, mode, address)
 
+def parse_jump(args):
+    if len(args) < 2:
+        raise SyntaxError("Not enough arguments.")
+    if len(args) > 2:
+        raise SyntaxError("Trash at end of line \"{}\"".format(" ".join(args[3:])))
+    opcode = OPCODE_TABLE[args[0]]
+    address, mode = parse_operand(args[1])
+    return Instruction(opcode, 0, ADDRESS_MODES["DIRECT"], address)
+
+def parse_dual_registers(args):
+    if len(args) < 3:
+        raise SyntaxError("Not enough arguments.")
+    if len(args) > 3:
+        raise SyntaxError("Trash at end of line \"{}\"".format(" ".join(args[3:])))
+    opcode = OPCODE_TABLE[args[0]]
+    register_a = REGISTERS[args[1].upper()]
+    register_b = REGISTERS[args[2].upper()]
+    return Instruction(opcode, register_a, register_b, 0, 1)
 
 def main():
     success = True
