@@ -125,6 +125,8 @@ OPCODE_TABLE = {
     "LSR"   : 0b0101,
     "BRA"   : 0b0110,
     "BNE"   : 0b0111,
+    "CMP"   : 0b1000,
+    "BEQ"   : 0b1001,
     "HALT"  : 0b1111,
 }
 
