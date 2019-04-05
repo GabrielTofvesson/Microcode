@@ -1,8 +1,8 @@
 # Beatuifull
-LOAD GR0 *0x00E0 # I
-LOAD GR1 *0x00E0 # J
+LOAD GR0 *0x00DF # I
 
 OUTER:
+ADD GR0 1
 CMI GR0 0xFF
 BEQ @END
 
