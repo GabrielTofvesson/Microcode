@@ -262,8 +262,6 @@ fun parseALU(instr: String): MicroInstruction {
     val args = instr.split(" ")
     if(args.size != 2) throw RuntimeException("Unexpected arguments: $instr")
 
-    println(instr)
-
     val source = Register.lookup(args[1])
     if(!source.canRead) throw RuntimeException("Cannot read from source: $instr")
 
