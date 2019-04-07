@@ -1,10 +1,11 @@
-# Move value in GR to HR and increment PCL
-
 lcset 16
+const 0     # Set AR to 0
 
-$LOOP
+$NEXT
+bls @END
 incpc; declc
-bls @END          # Branch to micro-address 0 if L-flag is set
-bra @LOOP
+add pc
+bra @NEXT
+
 $END
-HALT
+halt
