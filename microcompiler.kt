@@ -136,7 +136,7 @@ open class MicroInstruction(private val _compiledValue: Int, val isConstInstr: B
     val readsBus = isConstInstr || fromBus != FromBus.NONE
 
     val needsUADR = isConstInstr || (lc == LoopCounter.U) || (seq.value in 0b0100..0b1110)
-
+    private val rawValue: Int = _compiledValue onlyBits 25 or (if(addressReference == null || addressReference!!.actualAddress == -1) 0 else addressReference!!.actualAddress)
     val compiledValue: Int
         get(){
             if(addressReference != null && addressReference!!.actualAddress == -1)
@@ -163,7 +163,12 @@ open class MicroInstruction(private val _compiledValue: Int, val isConstInstr: B
         if(seq != SEQ.INC && uInstr.seq != SEQ.INC && seq != uInstr.seq) throw RuntimeException("SEQ mismatch") // We can merge an INC with something else, but we cannot merge more than this
         if(needsUADR && uInstr.needsUADR && address != uInstr.address) throw RuntimeException("uADR mismatch") // Instructions cannot depend on differing uADR values
 
-        return MicroInstruction(compiledValue or uInstr.compiledValue)
+        val newInstr = MicroInstruction(rawValue or uInstr.rawValue)
+
+        val adrRef = if(needsUADR) addressReference else if(uInstr.needsUADR) uInstr.addressReference else null
+        if(adrRef != null && newInstr.needsUADR) newInstr withReference adrRef
+
+        return newInstr
     }
 }
 
