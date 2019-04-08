@@ -231,14 +231,28 @@ Branch to address of label if **O-flag** is 0.
 Define a compile-time constant. This will replace all (valid) constant
 declarations with the given name with the value supplied here.
 
+**NOTE**: Constant names are case-insensitive; i.e. *FOO* and *foo* are
+functionally indistinguishable to the compiler.
+
+
 ### \#data \[address] [const]
 Define an initial value in the program memory at the given address.
+
+### $[label]
+Define a compile-time label at the given position in the microprogram. Labels
+can be referenced using an '@' symbol.
+
+For example: *$BAR* would declare a label *BAR* which can be referenced with
+*@BAR*.
+
+**NOTE**: Label names are case-insensitive; i.e. *@FOO* and *@foo* are
+functionally indistinguishable to the compiler.
 
 
 ## Flags
 Flags - *aside from L* - are set based on ALU operations, so they depend on
-**AR** and the **BUS**. Unless otherwise implied or stated, **AR** refers to
-the state/value of **AR** *after* an ALU operation.
+**AR** and the **BUS**. Henceforth, unless otherwise implied or stated, **AR**
+will refer to the state/value of **AR** *after* an ALU operation.
 
 ### Z
 Set if **AR** == **BUS**
