@@ -1,5 +1,5 @@
 enum class ALU(val value: Int, val parameters: Int = 1) {
-    NOP(0b0000),    // No operation
+    NOP(0b0000, 0), // No operation
     MOV(0b0001),    // Move from bus to AR
     MVN(0b0010),    // Move inverse of bus to AR
     MVZ(0b0011, 0), // Set AR to zero
