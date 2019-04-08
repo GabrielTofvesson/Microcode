@@ -377,6 +377,7 @@ fun main(args: Array<String>){
     var currentLine = 0
     var lineCount = 0
     val insns = ArrayList<MicroInstruction>()
+    println("@p")
     for(line in file.readText().replace("\r", "").split("\n")){
         ++lineCount
         try{
@@ -388,9 +389,10 @@ fun main(args: Array<String>){
                 continue
             }
     
+            // Define compile-time constant
             if(actualCode.startsWith("#define ")){
                 val substr = actualCode.substring(8)
-                if(substr.indexOf(" ") == -1) throw RuntimeException("Bad constant definition format: $actualCode")
+                if(substr.indexOf(" ") == -1) throw RuntimeException("Bad compile-time constant definition: $actualCode")
                 val name = substr.substring(0, substr.indexOf(" "))
                 val value = substr.substring(substr.indexOf(" ") + 1).replace(" ", "").replace("\t", "")
                 try{
@@ -401,6 +403,23 @@ fun main(args: Array<String>){
                 }catch(e: NumberFormatException){
                     throw RuntimeException("Cannot parse constant: $actualCode")
                 }
+            }
+
+            // Define Program-Memory constants
+            if(actualCode.startsWith("#data ")){
+                fun err(): Nothing = throw RuntimeException("Bad program-memory state definition: $actualCode")
+                val substr = actualCode.substring(6)
+                if(substr.indexOf(" ") == -1) err()
+
+                val address = substr.substring(0, substr.indexOf(" "))
+                val constant = substr.substring(substr.indexOf(" ") + 1).replace(" ", "").replace("\t", "")
+
+                try{
+                    println("@0x${readNumber(address, 255)}\n${readNumber(constant, 65535).or(1 shl 30).toString(16).substring(4)}")
+                }catch(e: NumberFormatException){
+                    err()
+                }
+                continue
             }
     
             val instr = parseInstruction(actualCode)
