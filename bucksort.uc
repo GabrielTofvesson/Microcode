@@ -1,25 +1,34 @@
-#### FOR TESTING PURPOSES ONLY ####
+#define BUCKET_SIZE 0b1000
+#define BUCKET_COUNT 15
+#define LIST_START 0xE0
+#define LIST_SIZE 0x20
+#define HASH_MASK 0b1111000
+
+
+
+
+//// FOR TESTING PURPOSES ONLY ////
 bra @BUBBLE_YEET
 
 
 
 
-## ---- Set initial state ----
+//// ---- Set initial state ----
 
 
-# Zero-out everything
+// Zero-out everything
 const 0
 mov ar asr
 
 const 1
 mov ar pc
 
-# Set up loop
-const 0b1000
+// Set up loop
+const BUCKET_SIZE
 mov ar hr
-lcset 15
+lcset BUCKET_COUNT
 
-# Reset bucket counters for each bucket
+// Reset bucket counters for each bucket
 $INIT_BUCKETS
 mov pc pm; bls @INIT_BUCKETS_END
 mov ar asr; declc
@@ -30,11 +39,11 @@ $INIT_BUCKETS_END
 
 
 
-## ---- Bucket sort ----
+//// ---- Bucket sort ----
 
-# Set PC to E0
-const 0xE0
-mov ar pc; lcset 0x20
+// Set PC to E0
+const LIST_START
+mov ar pc; lcset LIST_SIZE
 
 
 
@@ -42,29 +51,29 @@ $MOVE_TO_BUCKETS
 mov pc asr; declc; bls @MOVE_TO_BUCKETS_END 
 mov pm ar; mov pm gr; incpc
 
-rol ar
-rol ar
-rol ar
-rol ar
-rol ar
-rol ar
-rol ar
-and 0x78
+rol
+rol
+rol
+rol
+rol
+rol
+rol
+and HASH_MASK
 
 mov ar asr
-mov pc ir               # Push PC
+mov pc ir               // Push PC
 mov pm pc; add pm
 incpc
 mov pc pm
 mov ar asr
 mov gr pm
-mov ir pc               # Pop PC
+mov ir pc               // Pop PC
 bra @MOVE_TO_BUCKETS
 
 $MOVE_TO_BUCKETS_END
 
 
-## ---- Bubble sort ----
+//// ---- Bubble sort ----
 
 
 
@@ -89,3 +98,5 @@ bra @LOOP
 $NOUPDATE
 mov gr ar
 bra @LOOP
+
+$LOOP
