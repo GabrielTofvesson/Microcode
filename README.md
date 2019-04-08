@@ -245,7 +245,7 @@ can be referenced using an '@' symbol.
 For example: *$BAR* would declare a label *BAR* which can be referenced with
 *@BAR*.
 
-**NOTE**: Label names are case-insensitive; i.e. *@FOO* and *@foo* are
+**NOTE**: Label names are case-insensitive; i.e. @*FOO* and @*foo* are
 functionally indistinguishable to the compiler.
 
 
