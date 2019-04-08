@@ -1,20 +1,20 @@
-enum class ALU(val value: Int) {
+enum class ALU(val value: Int, val parameters: Int = 1) {
     NOP(0b0000),    // No operation
     MOV(0b0001),    // Move from bus to AR
     MVN(0b0010),    // Move inverse of bus to AR
-    MVZ(0b0011),    // Set AR to zero
+    MVZ(0b0011, 0), // Set AR to zero
     ADD(0b0100),    // Add bus to AR
     SUB(0b0101),    // Subtract bus from AR
     AND(0b0110),    // Bitwise AND with bus and AR
     ORR(0b0111),    // Bitwise OR with bus and AR
     ADN(0b1000),    // Add bus to AR without setting flags
-    LSL(0b1001),    // Logical shift left AR
-    BSL(0b1010),    // Shift contents of (AR and HR) left (32-bit shift)
-    ASR(0b1011),    // Arithmetic shift right
-    BSR(0b1100),    // Signed big shift right
-    LSR(0b1101),    // Logical shift right AR
-    ROL(0b1110),    // Rotate AR left
-    BRL(0b1111);    // Rotate ARHR left (32-bit rotate)
+    LSL(0b1001, 0), // Logical shift left AR
+    BSL(0b1010, 0), // Shift contents of (AR and HR) left (32-bit shift)
+    ASR(0b1011, 0), // Arithmetic shift right
+    BSR(0b1100, 0), // Signed big shift right
+    LSR(0b1101, 0), // Logical shift right AR
+    ROL(0b1110, 0), // Rotate AR left
+    BRL(0b1111, 0); // Rotate ARHR left (32-bit rotate)
 
     companion object {
         fun locate(value: Int) = values().first{ it.value == value }
@@ -56,6 +56,7 @@ enum class FromBus(val value: Int) {
 
 enum class LoopCounter(val value: Int) {
     NONE(0b00),
+
     DEC(0b01),
     BUS(0b10),
     U(0b11);
@@ -107,6 +108,7 @@ open class MicroInstruction(private val _compiledValue: Int, val isConstInstr: B
 
     constructor(aluOP: ALU, toBus: ToBus): this(aluOP, toBus, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.INC)
     constructor(aluOP: ALU, constant: Int): this((aluOP.value shl 21) or (ToBus.CONST.value shl 18) or (constant onlyBits 16), true)
+    constructor(aluOP: ALU): this(aluOP, 0)
     constructor(toBus: ToBus, fromBus: FromBus): this(ALU.NOP, toBus, fromBus, false, false, LoopCounter.NONE, SEQ.INC)
     constructor(toBus: ToBus): this(ALU.NOP, toBus, FromBus.NONE, false, false, LoopCounter.BUS, SEQ.INC)
     
@@ -182,7 +184,7 @@ enum class Register(val busValue: Int, val canRead: Boolean = true) {
     GR(0b110);
 
     companion object {
-        fun lookup(name: String) = values().first{ it.name.toLowerCase() == name.toLowerCase() }
+        fun lookup(name: String) = values().firstOrNull{ it.name.toLowerCase() == name.toLowerCase() }
     }
 }
 
@@ -200,9 +202,18 @@ class AddressReference{
     var actualAddress: Int
         private set
 
+    private fun checkResolved(){
+        if(actualAddress != -1) throw RuntimeException("Address already resolved")
+    }
+
+    fun resolveConstant(value: Int){
+        checkResolved()
+        actualAddress = value
+    }
+
     fun resolveAddress(target: Int){
         if(target > 128 || target < 0) throw RuntimeException("Invalid target address")
-        if(actualAddress != -1) throw RuntimeException("Address already resolved")
+        checkResolved()
         actualAddress = target
     }
 
@@ -229,20 +240,19 @@ fun parseMOV(instr: String): MicroInstruction {
     if(args.size != 3) throw RuntimeException("MOV instruction requires two arguments: $instr")
     if(args[1] == args[2]) throw RuntimeException("Cannot move from register being moved to: $instr")
 
-    val a = Register.lookup(args[1])
+    val a = Register.lookup(args[1])!!
     if(!a.canRead) throw RuntimeException("Cannot read from register: $instr")
     
     
     if(args[2] == "lc") return MicroInstruction(ToBus.locate(a.busValue))
 
-    val b = Register.lookup(args[2])
+    val b = Register.lookup(args[2])!!
     if(b == Register.AR) return MicroInstruction(ALU.MOV, ToBus.locate(a.busValue))
 
     return MicroInstruction(ToBus.locate(a.busValue), FromBus.locate(b.busValue))
 }
 
 fun readNumber(literal: String, max: Int): Int {
-    
     val number = if(literal.startsWith("0") && literal.length > 1){ // Parse special number
         if(literal[1] == 'x') Integer.parseInt(literal.substring(2), 16)
         else if(literal[1] == 'b') Integer.parseInt(literal.substring(2), 2)
@@ -260,24 +270,30 @@ fun parseCONST(instr: String): MicroInstruction {
     val args = instr.split(" ").toTypedArray()
     if(args.size != 2) throw RuntimeException("Unexpected arguments: $instr")
 
-    return MicroInstruction(ALU.MOV, readNumber(args[1], 65535))
+    return MicroInstruction(ALU.MOV) withReference try{ AddressReference.makeReference(readNumber(args[1], 65535)) } catch(e: NumberFormatException){ AddressReference.makeReference(args[1]) }
 }
 
 fun parseALU(instr: String): MicroInstruction {
     val args = instr.split(" ")
-    if(args.size != 2) throw RuntimeException("Unexpected arguments: $instr")
+
+    val aluOperation = ALU.matchName(args[0])!!
+
+    if(args.size != (1 + aluOperation.parameters)) throw RuntimeException("Unexpected arguments: $instr")
+
+    if(aluOperation.parameters == 0) return MicroInstruction(aluOperation, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.INC)
 
     try{
         val num = readNumber(args[1], 65535)
-        return MicroInstruction(ALU.matchName(args[0])!!, num)
+        return MicroInstruction(aluOperation, num)
     }catch(e: NumberFormatException){
         // NaN
     }
 
     val source = Register.lookup(args[1])
+    if(source == null) return MicroInstruction(aluOperation) withReference AddressReference.makeReference(args[1])
     if(!source.canRead) throw RuntimeException("Cannot read from source: $instr")
 
-    return MicroInstruction(ALU.matchName(args[0])!!, ToBus.locate(source.busValue))
+    return MicroInstruction(aluOperation, ToBus.locate(source.busValue))
 }
 
 fun parseLabelReference(ref: String): AddressReference? {
@@ -302,7 +318,13 @@ fun parseLCSet(instr: String): MicroInstruction {
     val args = instr.split(" ")
     if(args.size != 2) throw RuntimeException("Unexpected arguments: $instr")
 
-    return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.U, SEQ.INC) withReference AddressReference.makeReference(readNumber(args[1], 0xFF))
+    val ref = try{
+        AddressReference.makeReference(readNumber(args[1], 0xFF))
+    }catch(e: NumberFormatException){
+        AddressReference.makeReference(args[1])
+    }
+
+    return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.U, SEQ.INC) withReference ref
 }
 
 fun parseAddressReference(arg: String): AddressReference {
@@ -321,7 +343,7 @@ fun parseInstruction(line: String): MicroInstruction? {
         if(shave.startsWith("mov ")) return parseMOV(shave)
         else if(shave.startsWith("const ")) return parseCONST(shave)
         else if(shave == "incpc") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, true, LoopCounter.NONE, SEQ.INC)
-        else if(shave.indexOf(" ") > 0 && ALU.matchName(shave.substring(0, shave.indexOf(" "))) != null) return parseALU(shave)
+        else if(ALU.matchName(shave.substring(0, if(shave.indexOf(" ") == -1) shave.length else shave.indexOf(" "))) != null) return parseALU(shave)
         else if(shave.startsWith("call ")) return parseCALL(shave)
         else if(shave == "ret") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.RET)
         else if(shave.startsWith("b") && shave.indexOf(" ") != -1 && SEQ.matchName(shave.substring(0, shave.indexOf(" "))) != null) return parseBranch(shave)
@@ -341,6 +363,11 @@ fun parseInstruction(line: String): MicroInstruction? {
     }
 }
 
+fun error(message: String, line: Int){
+    System.err.println("Error on line $line:\n\t$message")
+    System.exit(1)
+}
+
 fun main(args: Array<String>){
     if(args.size != 1) throw RuntimeException("Bad arguments :(")
     val file = java.io.File(args[0])
@@ -348,21 +375,42 @@ fun main(args: Array<String>){
     if(!file.isFile) throw RuntimeException("File not found :(")
     val builder = StringBuilder("@u\n")
     var currentLine = 0
+    var lineCount = 0
     val insns = ArrayList<MicroInstruction>()
     for(line in file.readText().replace("\r", "").split("\n")){
-        val actualCode = (if(line.indexOf("#") != -1) line.substring(0, line.indexOf("#")) else line).toLowerCase()
-        if(actualCode.length == 0) continue
-
-        if(actualCode.startsWith("$")){
-            AddressReference.makeReference(actualCode.substring(1)).resolveAddress(currentLine)
-            continue
+        ++lineCount
+        try{
+            val actualCode = (if(line.indexOf("//") != -1) line.substring(0, line.indexOf("//")) else line).toLowerCase()
+            if(actualCode.length == 0) continue
+    
+            if(actualCode.startsWith("$")){
+                AddressReference.makeReference(actualCode.substring(1)).resolveAddress(currentLine)
+                continue
+            }
+    
+            if(actualCode.startsWith("#define ")){
+                val substr = actualCode.substring(8)
+                if(substr.indexOf(" ") == -1) throw RuntimeException("Bad constant definition format: $actualCode")
+                val name = substr.substring(0, substr.indexOf(" "))
+                val value = substr.substring(substr.indexOf(" ") + 1).replace(" ", "").replace("\t", "")
+                try{
+                    val constant = readNumber(value, 65535)
+                    
+                    AddressReference.makeReference(name).resolveConstant(constant)
+                    continue
+                }catch(e: NumberFormatException){
+                    throw RuntimeException("Cannot parse constant: $actualCode")
+                }
+            }
+    
+            val instr = parseInstruction(actualCode)
+            if(instr == null) continue // Blank line
+            insns.add(instr)
+    
+            ++currentLine
+        }catch(e: Throwable){
+            error(e.message ?: "Compilation failed with an unknown error", lineCount)
         }
-
-        val instr = parseInstruction(actualCode)
-        if(instr == null) continue // Blank line
-        insns.add(instr)
-
-        ++currentLine
     }
     for(instr in insns)
         builder.append(instr.compiledValue.toInstruction()).append("\n")
