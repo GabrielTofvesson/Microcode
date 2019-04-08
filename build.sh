@@ -1,11 +1,12 @@
 #!/bin/bash
 
 usage(){
-    echo "Usage:\n\t$0 [TARGET] {TYPE | OUTFILE}\n\t$0 [TARGET] [MICROTARGET] [OUTFILE]\n\t$0 [TARGET] [TYPE] [OUTFILE] [COMBINE]\n\t$0 [TARGET] asm [OUTFILE] [COMBINE] [MICROTARGET]\n\nWhere:\n\tTARGET: main compilation target file\n\tTYPE: either \"asm\" or \"micro\"\n\tOUTFILE: output .mia file\n\tCOMBINE: existing .mia file to combine compilation output with\n\tMICROTARGET: explicit microinstruction target"
+    echo -e "Usage:\n\t$0 [TARGET] {TYPE | OUTFILE}\n\t$0 [TARGET] [MICROTARGET] [OUTFILE]\n\t$0 [TARGET] [TYPE] [OUTFILE] [COMBINE]\n\t$0 [TARGET] asm [OUTFILE] [COMBINE] [MICROTARGET]\n\nWhere:\n\tTARGET: main compilation target file\n\tTYPE: either \"asm\" or \"micro\"\n\tOUTFILE: output .mia file\n\tCOMBINE: existing .mia file to combine compilation output with\n\tMICROTARGET: explicit microinstruction target"
 }
 
 if [ $# -eq 0 ]; then
     >&2 echo "Not enough arguments!"
+    usage
     exit
 fi
 
@@ -48,6 +49,7 @@ case $# in
     5)
         if [ "$2" != "asm" ]; then
             >&2 echo "TYPE must be asm"
+            usage
             exit
         fi
 
@@ -59,6 +61,7 @@ case $# in
 
     *)
         >&2 echo "Too many arguments!"
+        usage
         exit
         ;;
 esac
