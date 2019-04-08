@@ -103,7 +103,7 @@ class MachineState {
     }
 }
 
-inline fun error(message: String){
+fun error(message: String){
     System.err.println(message)
     println("Usage:\n\tkotlin WeaverKt [machineCodeFile] [outputFile]\nor\n\tkotlin WeaverKt [machineCodeFile] [inputState] [outputFile]")
     System.exit(1)
@@ -129,31 +129,39 @@ fun main(args: Array<String>){
     }
 
     val weaveData = weaveFile.readText().replace("\r", "").split("\n").toTypedArray()
-    var index = 0
     var weaveUCode = false
+    var pIndex = 0
+    var uIndex = 0
+    fun index()= if(weaveUCode) uIndex else pIndex
+    fun iIdx() {
+        if(weaveUCode) ++uIndex
+        else ++pIndex
+    }
+    fun sIdx(value: Int){
+        if(weaveUCode) uIndex = value
+        else pIndex = value
+    }
     for(rawValue in weaveData){
         val value = rawValue.replace(" ", "").replace("\t", "")
         
         if(value.length == 0 || value.startsWith("#")) continue
-        else if((weaveUCode && index >= state.microMemory.size) || (!weaveUCode && index >= state.programMemory.size)) error("Program memory out of bounds! Did you pass too much data?")
+        else if((weaveUCode && index() >= state.microMemory.size) || (!weaveUCode && index() >= state.programMemory.size)) error("Program memory out of bounds! Did you pass too much data?")
         else if(value.startsWith("@")){
-            if(value == "@u"){
-                weaveUCode = true
-                index = 0
+            if(value == "@u") weaveUCode = true
+            else if(value == "@p") weaveUCode = false
+            else if(value.startsWith("@0x")) sIdx(Integer.parseInt(value.substring(3), 16))
+            else sIdx(Integer.parseInt(value.substring(1), 10))
 
-            }
-            else if(value.startsWith("@0x")) index = Integer.parseInt(value.substring(3), 16)
-            else index = Integer.parseInt(value.substring(1), 10)
-            --index
+            continue
         }
         else if((weaveUCode && value.length != 7) || (!weaveUCode && value.length != 4)) error("Cannot weave data of bad length: $value")
         else try{
-            if(weaveUCode) state.microMemory[index] = Integer.parseInt(value, 16)
-            else state.programMemory[index] = Integer.parseInt(value, 16).toShort()
+            if(weaveUCode) state.microMemory[index()] = Integer.parseInt(value, 16)
+            else state.programMemory[index()] = Integer.parseInt(value, 16).toShort()
         }catch(e: NumberFormatException){
             error("Cannot weave non-hex data: $value")
         }
-        ++index
+        iIdx()
     }
 
     val outputFile = if(args.size == 3) File(args[2]) else File(args[1])
