@@ -4,7 +4,8 @@
 #define LIST_SIZE 0x20
 #define HASH_MASK 0b1111000
 
-
+// Put 0x1337 at address 0 in program-memory
+#data 0x00 0x1337
 
 
 //// FOR TESTING PURPOSES ONLY ////
