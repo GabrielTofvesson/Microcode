@@ -6,7 +6,7 @@ microprogramming the LMIA system.
 
 ## μASM instruction set
 
-### NOP [reg]
+### NOP
 No-operation. This wastes one clock cycle
 
 
@@ -26,9 +26,8 @@ Move the inverse of a value (from register or constant) into register **AR**.
 *If a constant is passed, this operation cannot be parallellized*
 
 
-### MVZ [reg]
-Set **AR** to zero. *reg* is ignored and only prevalent due to a microcompiler
-quirk; expect it to be removed in future releases.
+### MVZ
+Set **AR** to zero.
 
 *Sets flags: Z, N*
 
@@ -86,9 +85,8 @@ flags.
 *If a constant is passed, this operation cannot be parallellized*
 
 
-### LSL [reg]
-Performs a logical shift left of **AR**. *reg* is ignored and only prevalent
-due to a microcompiler quirk; expect it to be removed in future releases.
+### LSL
+Performs a logical shift left of **AR**.
 
 *This operation uses the bus*
 
@@ -97,11 +95,9 @@ due to a microcompiler quirk; expect it to be removed in future releases.
 *Sets flags: Z, N, C*
 
 
-### BSL [reg]
+### BSL
 Performs a logical shift left of **AR** and **HR** as if they were one 32-bit
-register where **AR** corresponds to the most-significant bits. *reg* is
-ignored and only prevalent due to a microcompiler quirk; expect it to be
-removed in future releases.
+register where **AR** corresponds to the most-significant bits.
 
 *This operation uses the bus*
 
@@ -110,10 +106,8 @@ removed in future releases.
 *Sets flags: Z, N, C*
 
 
-### ASR [reg]
-Performs an arithmetic shift right on **AR**. *reg* is ignored and only
-prevalent due to a microcompiler quirk; expect it to be removed in future
-releases.
+### ASR
+Performs an arithmetic shift right on **AR**.
 
 *This operation uses the bus*
 
@@ -122,11 +116,9 @@ releases.
 *Sets flags: Z, N, C*
 
 
-### BSR [reg]
+### BSR
 Performs an arithmetic shift right of **AR** and **HR** as if they were one
-32-bit register where **AR** corresponds to the most-significant bits. *reg* is
-ignored and only prevalent due to a microcompiler quirk; expect it to be
-removed in future releases.
+32-bit register where **AR** corresponds to the most-significant bits.
 
 *This operation uses the bus*
 
@@ -135,9 +127,8 @@ removed in future releases.
 *Sets flags: Z, N, C*
 
 
-### LSR [reg]
-Performs a logical shift right of **AR**. *reg* is ignored and only prevalent
-due to a microcompiler quirk; expect it to be removed in future releases.
+### LSR
+Performs a logical shift right of **AR**.
 
 *This operation uses the bus*
 
@@ -146,10 +137,8 @@ due to a microcompiler quirk; expect it to be removed in future releases.
 *Sets flags: Z, N, C*
 
 
-### ROL [reg]
-Performs an arithmetic rotate right on **AR**. *reg* is ignored and only
-prevalent due to a microcompiler quirk; expect it to be removed in future
-releases.
+### ROL
+Performs an arithmetic rotate right on **AR**.
 
 *This operation uses the bus*
 
@@ -158,11 +147,9 @@ releases.
 *Sets flags: Z, N, C*
 
 
-### BRL [reg]
+### BRL
 Performs an arithmetic shift left of **AR** and **HR** as if they were one
-32-bit register where **AR** corresponds to the most-significant bits. *reg* is
-ignored and only prevalent due to a microcompiler quirk; expect it to be
-removed in future releases.
+32-bit register where **AR** corresponds to the most-significant bits.
 
 *This operation uses the bus*
 
@@ -238,11 +225,20 @@ Branch to address of label if **C-flag** is 0.
 Branch to address of label if **O-flag** is 0.
 
 
+## Compiler/weaver directives
+
+### \#define \[name] [const]
+Define a compile-time constant. This will replace all (valid) constant
+declarations with the given name with the value supplied here.
+
+### \#data \[address] [const]
+Define an initial value in the program memory at the given address.
+
 
 ## Flags
-Flags - *aside from L* - are set based on ALU operations, so they depend on **AR** and the
-**BUS**. Unless otherwise implied or stated, **AR** refers to the state/value
-of **AR** *after* an ALU operation.
+Flags - *aside from L* - are set based on ALU operations, so they depend on
+**AR** and the **BUS**. Unless otherwise implied or stated, **AR** refers to
+the state/value of **AR** *after* an ALU operation.
 
 ### Z
 Set if **AR** == **BUS**
