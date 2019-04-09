@@ -76,6 +76,7 @@ else
     KCLASS="MicrocompilerKt"
 fi
 kotlin -classpath $KJAR $KCLASS $TARGET > comp.out || exit
+python rand_gen.py >> comp.out
 
 if [ "$COMBINE" = "" ]; then
     if [ "$MICRO" != "" ]; then
