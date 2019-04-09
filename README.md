@@ -225,6 +225,12 @@ Branch to address of label if **C-flag** is 0.
 Branch to address of label if **O-flag** is 0.
 
 
+### RESET [reg]
+Sets all bits in the specified register to 1.
+
+*This operation uses the bus*
+
+
 ## Compiler/weaver directives
 
 ### \#define \[name] [const]

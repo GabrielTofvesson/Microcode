@@ -350,6 +350,7 @@ fun parseInstruction(line: String): MicroInstruction? {
         else if(shave == "halt") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.HALT)
         else if(shave.startsWith("lcset")) return parseLCSet(shave)
         else if(shave == "declc") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.DEC, SEQ.INC)
+        else if(shave.startsWith("reset")) return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.locate(Register.lookup(shave.substring(6))!!.busValue), false, false, LoopCounter.NONE, SEQ.INC)
         else throw RuntimeException("Unknown instruction: $shave")
     }else{
         var result: MicroInstruction? = null
