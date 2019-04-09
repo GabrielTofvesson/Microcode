@@ -431,6 +431,13 @@ fun main(args: Array<String>){
             error(e.message ?: "Compilation failed with an unknown error", lineCount)
         }
     }
+    if(currentLine > 127){
+        System.err.println("Instruction count overflow: $currentLine instructions")
+        System.exit(1)
+    }
+
+    System.err.println("INFO: Microcompilation succeeded! Instruction count: $currentLine")
+
     for(instr in insns)
         builder.append(instr.compiledValue.toInstruction()).append("\n")
     print(builder.toString())

@@ -145,7 +145,7 @@ fun main(args: Array<String>){
         val value = rawValue.replace(" ", "").replace("\t", "")
         
         if(value.length == 0 || value.startsWith("#")) continue
-        else if((weaveUCode && index() >= state.microMemory.size) || (!weaveUCode && index() >= state.programMemory.size)) error("Program memory out of bounds! Did you pass too much data?")
+        else if((weaveUCode && index() >= state.microMemory.size) || (!weaveUCode && index() >= state.programMemory.size)) error("Memory out of bounds: ${index()}! Did you pass too much data?")
         else if(value.startsWith("@")){
             if(value == "@u") weaveUCode = true
             else if(value == "@p") weaveUCode = false
