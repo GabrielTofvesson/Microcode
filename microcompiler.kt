@@ -415,7 +415,7 @@ fun main(args: Array<String>){
                 val constant = substr.substring(substr.indexOf(" ") + 1).replace(" ", "").replace("\t", "")
 
                 try{
-                    println("@0x${readNumber(address, 255)}\n${readNumber(constant, 65535).or(1 shl 30).toString(16).substring(4)}")
+                    println("@0x${readNumber(address, 255).toString(16)}\n${readNumber(constant, 65535).or(1 shl 30).toString(16).substring(4)}")
                 }catch(e: NumberFormatException){
                     err()
                 }
