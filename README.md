@@ -261,7 +261,7 @@ Flags - *aside from L* - are set based on ALU operations, so they depend on
 will refer to the state/value of **AR** *after* an ALU operation.
 
 ### Z
-Set if **AR** == **BUS**
+Set if **AR** == **0**
 
 ### N
 Set if sign bit in **AR** is set.
