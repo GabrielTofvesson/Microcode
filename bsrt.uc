@@ -17,6 +17,7 @@
 #data 0x60 0x60
 #data 0x68 0x68
 #data 0x70 0x70
+#data 0x78 0x78
 
 // Set PC to LIST_START
 const LIST_START
@@ -116,4 +117,42 @@ brz @BUCKET_SORT_END
 bra @BUCKET_SORT_START
 $BUCKET_SORT_END
 
+// PC is 0 here. Data is sorted smallest-to largest in memory: just spread out into buckets ;)
+// Perform final merge here
+
+call @BREAK
+
+// Set IR to 0xE0. IR will be the write index
+const 0xE0
+mov ar ir
+mov pc gr
+
+// Dereference index of final element in bucket into AR and subtract PC to compute length of bucket
+// Save length into lc
+$FINAL_COPY
+mov pc asr
+mov pm ar
+sub pc
+mov ar lc; incpc
+
+// Copy bucket
+$COPY_LOOP
+bls @COPY_LOOP_NEXT
+mov pc asr
+mov pm hr
+mov ir asr; mov ir ar
+add 1
+mov ar ir
+mov hr pm; declc; incpc
+bra @COPY_LOOP
+
+$COPY_LOOP_NEXT
+mov gr ar
+adn 8
+mov ar gr
+mov gr pc
+sub 0x80
+bnz @FINAL_COPY
+
+$BREAK
 halt
