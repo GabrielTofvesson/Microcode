@@ -13,6 +13,62 @@ bool LT(int a, int b)
 	return a < b;
 }
 
+// Bucket/Insertion sort (except final merge). C-style pseudocode
+void bi_sort(short *data){
+    short *buckets;
+    short pc_, ir_, ar, gr, hr, lc_, ir_;
+
+    for(pc_ = 0xE0; pc_ != 0; ++pc_){
+        // Fetch and hash
+        ar = data[pc_];
+        gr = data[pc_];
+        
+        ar = ar >> 9;
+        ar = ar & 0b1111000;
+        hr = ar;
+
+        ar = buckets[ar];    // Index 0 is pointer to end of array
+        
+        ++ar;
+        buckets[hr] = ar;    // Increment pointer (since we're inserting a new value)
+        --ar;
+
+        ir_ = pc_;           // Push pc
+        pc_ = ar;            // Copy start index to pc (for fast indexing)
+        ar = ar - hr;        // Compute length
+
+        lc_ = ar;            // Loop AR-times
+
+        --lc_;
+
+        while(lc_ != 0){
+            ++pc_;
+            hr = data[pc_];
+            if(hr > gr){
+                data[pc_] = gr;
+                // Insert here
+                while(lc_ != 0){
+                    ++pc_;
+                    gr = data[pc_];
+                    data[pc_] = hr;
+                    hr = gr;
+                    --lc_;
+                }
+
+                goto END;
+            }
+            --lc_;
+        }
+
+        ++pc_;
+
+        data[pc_] = gr;      // GR was the biggest. Insert it at the end
+
+END:
+        pc_ = ir_;           // Pop pc
+    }
+}
+
 void sort(short *data, int length)
 {
 	short buckets[BUCKETS][BUCKET_SIZE] = {};
