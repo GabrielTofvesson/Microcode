@@ -122,37 +122,92 @@ $BUCKET_SORT_END
 
 call @BREAK
 
-// Set IR to 0xE0. IR will be the write index
+// Set PC to write index
 const 0xE0
-mov ar ir
-mov pc gr
+mov ar pc
 
-// Dereference index of final element in bucket into AR and subtract PC to compute length of bucket
-// Save length into lc
-$FINAL_COPY
-mov pc asr
-mov pm ar
-sub pc
-mov ar lc; incpc
 
-// Copy bucket
-$COPY_LOOP
-bls @COPY_LOOP_NEXT
-mov pc asr
-mov pm hr
+// ######## INSERTION ########## 
+
+// COPY NEGATIVE
+
+// Initialize GR as bucket pointer and IR as element pointer
+const 0x78
+mov ar gr
+
+$LOOP_NEGATIVE
+// Dereference GR into IR and compute length
+mov gr asr
+mov pm ir; mov pm ar
+
+// Subtract start from end and save (the resultant length) into LC
+sub gr
+mov ar lc
+
+// Copy 0x78 to initial list (0xE0)
+$COPY_BUCKET_NEGATIVE
+bls @NEXT_BUCKET_NEGATIVE
+
 mov ir asr; mov ir ar
+mov pm hr
+
+sub 1
+mov ar ir
+
+// Write value to be copied into write index (data[pc] = data[ir])
+mov pc asr
+mov hr pm; incpc; declc
+bra @COPY_BUCKET_NEGATIVE
+$NEXT_BUCKET_NEGATIVE
+
+mov gr ar
+sub 0x08 // AR is one above the length, so sub 8.
+mov ar gr
+sub 0x38
+bnz @LOOP_NEGATIVE
+
+
+// COPY POSITIVE
+const 0x00
+mov ar gr
+
+$LOOP_POSITIVE
+// Dereference GR into IR and compute length
+mov gr asr
+mov pm ar
+
+// Subtract start from end and save (the resultant length) into LC
+sub gr
+mov ar lc
+
+// Calcuate the first element of the array and store in IR
+mov gr ar
 add 1
 mov ar ir
-mov hr pm; declc; incpc
-bra @COPY_LOOP
 
-$COPY_LOOP_NEXT
+// Copy 0x78 to initial list (0xE0)
+$COPY_BUCKET_POSITIVE
+bls @NEXT_BUCKET_POSITIVE
+
+mov ir asr; mov ir ar
+mov pm hr
+
+add 1
+mov ar ir
+
+// Write value to be copied into write index (data[pc] = data[ir])
+mov pc asr
+mov hr pm; incpc; declc
+bra @COPY_BUCKET_POSITIVE
+$NEXT_BUCKET_POSITIVE
+
 mov gr ar
-adn 8
+add 0x08 // AR is one above the length, so sub 8.
 mov ar gr
-mov gr pc
-sub 0x80
-bnz @FINAL_COPY
+sub 0x40
+bnz @LOOP_POSITIVE
+
+call @BREAK
 
 $BREAK
 halt
