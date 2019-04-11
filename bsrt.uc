@@ -2,22 +2,22 @@
 #define HASH_MASK 0b1111
 
 // PM initial state
-#data 0x00 0x10
-#data 0x01 0x1c
-#data 0x02 0x28
-#data 0x03 0x34
-#data 0x04 0x40
-#data 0x05 0x4c
-#data 0x06 0x58
-#data 0x07 0x64
-#data 0x08 0x70
-#data 0x09 0x7c
-#data 0x0a 0x88
-#data 0x0b 0x94
-#data 0x0c 0xa0
-#data 0x0d 0xac
-#data 0x0e 0xb8
-#data 0x0f 0xc4
+#data 0x00 0x70
+#data 0x01 0x7c
+#data 0x02 0x88
+#data 0x03 0x94
+#data 0x04 0xa0
+#data 0x05 0xac
+#data 0x06 0xb8
+#data 0x07 0xc4
+#data 0x08 0x10
+#data 0x09 0x1c
+#data 0x0a 0x28
+#data 0x0b 0x34
+#data 0x0c 0x40
+#data 0x0d 0x4c
+#data 0x0e 0x58
+#data 0x0f 0x64
 
 #data 0x10 0x10
 #data 0x1c 0x1c
@@ -41,7 +41,6 @@
 const LIST_START
 mov ar pc
 
-bra @BUCKET_SORT_START
 
 
 
@@ -77,6 +76,7 @@ bra @BUCKET_SORT_START
 
 //// ---- START OF NORMAL (TRASH) BUCKET SORT ---- ////
 // Start of bucket sort loop
+
 $BUCKET_SORT_START
 
 // Dereference pc into AR and GR (data[pc_])
@@ -104,13 +104,14 @@ mov pc pm
 mov ar lc
 
 // Save start index to PC (for fast dereferencing)
-mov hr pc
+// mov hr pc
 
 // Start of nested insertion sort
 $INSERTION_SORT_LOOP_START
 
 // If LC is set, we've reached the end of the elements
-bls @INSERTION_SORT_END_BIGGEST; incpc
+bls @INSERTION_SORT_END_BIGGEST
+
 
 // If(data[pc] < gr) continue;
 mov pc asr
@@ -154,6 +155,9 @@ brz @BUCKET_SORT_END
 bra @BUCKET_SORT_START
 $BUCKET_SORT_END
 
+
+
+
 // PC is 0 here. Data is sorted smallest-to largest in memory: just spread out into buckets ;)
 // Perform final merge here
 
@@ -167,7 +171,7 @@ mov ar pc
 // COPY NEGATIVE
 
 // Initialize GR as bucket pointer and IR as element pointer
-const 0xC4
+const 0x10
 mov ar gr
 
 $LOOP_NEGATIVE
@@ -196,15 +200,17 @@ bra @COPY_BUCKET_NEGATIVE
 $NEXT_BUCKET_NEGATIVE
 
 mov gr ar
-sub 0x0C // AR is one above the length, so sub 8.
+add 0x0C // AR is one above the length, so sub 8.
 mov ar gr
-sub 0x7C
+sub 0x70
 bnz @LOOP_NEGATIVE
 
 
+
+
+
+
 // COPY POSITIVE
-const 0x10
-mov ar gr
 
 $LOOP_POSITIVE
 // Dereference GR into IR and compute length
@@ -237,10 +243,11 @@ bra @COPY_BUCKET_POSITIVE
 $NEXT_BUCKET_POSITIVE
 
 mov gr ar
-add 0x0C // AR is one above the length, so sub 8.
+add 0x0C
 mov ar gr
-sub 0x88
+sub 0xD0
 bnz @LOOP_POSITIVE
+
 
 $BREAK
 halt
