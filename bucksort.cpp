@@ -13,6 +13,8 @@ bool LT(int a, int b)
 	return a < b;
 }
 
+// TODO: parallellize rotate-left instruction (BSL)
+// This can be done by partially unrolling the loop ;)
 // Bucket/Insertion sort (except final merge). C-style pseudocode
 void bi_sort(short *data){
     short *buckets;
@@ -43,15 +45,16 @@ void bi_sort(short *data){
 
         while(lc_ != 0){
             ++pc_;
-            hr = data[pc_];
-            if(hr > gr){
+            ar = data[pc_];
+            if((ar -= gr) < 0){
+                ar += gr;                
                 data[pc_] = gr;
                 // Insert here
                 while(lc_ != 0){
                     ++pc_;
                     gr = data[pc_];
-                    data[pc_] = hr;
-                    hr = gr;
+                    data[pc_] = ar;
+                    ar = gr;
                     --lc_;
                 }
 
