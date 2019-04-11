@@ -42,54 +42,67 @@ const LIST_START
 mov ar pc
 
 
+//// ---- START OF DANK SORT ---- ////
+$DANK_SORT
 
-
-
-
-// 
-// 
-// //// ---- START OF DANK BUCKET SORT ---- ////
-// $DANK_SORT_START
-// 
-// // Get value at index of PC and index of PC + 1
-// // (ar = gr0 = data[pc]; hr = gr3 = data[pc + 1])
-// mov pc asr
-// mov pm ar; mov pm gr; incpc
-// mov pc asr
-// mov pm hr
-// reset ir
-// mov pm gr
-// 
-// bsl
-// bsl
-// bsl
-// bsl
-// bsl
-// bsl
-// bsl
-// and HASH_MASK
-// 
-// 
-
-
-
-
-//// ---- START OF NORMAL (TRASH) BUCKET SORT ---- ////
-// Start of bucket sort loop
-
-$BUCKET_SORT_START
-
-// Dereference pc into AR and GR (data[pc_])
 mov pc asr
-mov pm ar; mov pm gr
+mov pc ir; incpc
+mov pm ar
+mov pc asr
+mov pm hr
 
-// Hash: rotate left by 7 and only keep bits 3-6 (inclusive)
-// This means we index on the highest 4 bits of the value
-// and we have 3 bits of leniency: bucket size of 8
-rol
-rol
-rol
-rol; mov pc ir
+brl; mov hr gr
+brl
+brl
+brl
+and HASH_MASK
+mov ar asr
+mov pm ar; mov pm asr
+mov ar pc; mvn ar
+add 1
+add pm
+
+mov ar lc
+
+mov pc ar
+
+// Move 
+mov pm pc
+incpc
+mov pc pm
+mov ar pc
+
+
+// First insertion
+$DANK_INSERT_FIRST_START
+
+incpc; bls @DANK_INSERT_FIRST_END_BIGGEST
+
+mov pc asr
+mov pm ar
+sub gr
+adn gr; brn @DANK_INSERT_FIRST_BOTTOM
+
+mov gr pm
+
+$DANK_INSERT_FIRST_SHIFT
+incpc; bls @DANK_INSERT_SECOND_START
+mov pc asr
+mov pm gr
+mov ar pm
+mov gr ar; declc
+bra @DANK_INSERT_FIRST_SHIFT
+
+$DANK_INSERT_FIRST_BOTTOM
+declc; bra @DANK_INSERT_FIRST_START
+
+$DANK_INSERT_FIRST_END_BIGGEST
+mov pc asr
+mov gr pm
+
+$DANK_INSERT_SECOND_START
+// Finalize hash in HR
+mov hr ar
 and HASH_MASK
 mov ar asr
 mov pm hr
@@ -99,60 +112,131 @@ mov pm pc; mov pm ar
 incpc; sub hr
 mov pc pm
 
-// Prepare for insertion sort here:
-// Compute length of bucket into LC
 mov ar lc
 
-// Save start index to PC (for fast dereferencing)
-// mov hr pc
+mov hr pc
 
-// Start of nested insertion sort
-$INSERTION_SORT_LOOP_START
+// Get the value we hashed
+mov ir asr
+mov pm gr
 
-// If LC is set, we've reached the end of the elements
-bls @INSERTION_SORT_END_BIGGEST
+// Second insertion
+$DANK_INSERT_SECOND_LOOP
+incpc; bls @DANK_INSERT_SECOND_END_BIGGEST
 
-
-// If(data[pc] < gr) continue;
 mov pc asr
 mov pm ar
 sub gr
-adn gr; brn @INSERTION_SORT_LOOP_BOTTOM
+adn gr; brn @DANK_INSERT_SECOND_BOTTOM
 
-// Insert and shift here
 mov gr pm
 
-// Just shift all the elements
-$INSERTION_SHIFT_LOOP
-bls @INSERTION_SORT_END_NOT_BIGGEST
-incpc
+$DANK_INSERT_SECOND_SHIFT
+incpc; bls @DANK_INSERT_SECOND_END_NUMLET
 mov pc asr
 mov pm gr
 mov ar pm
 mov gr ar; declc
-bra @INSERTION_SHIFT_LOOP
+bra @DANK_INSERT_SECOND_SHIFT
 
+$DANK_INSERT_SECOND_BOTTOM
+declc; bra @DANK_INSERT_SECOND_LOOP
 
-$INSERTION_SORT_LOOP_BOTTOM
-declc; bra @INSERTION_SORT_LOOP_START
-
-
-// Jump here if gr wasn't inserted into list
-$INSERTION_SORT_END_BIGGEST
+$DANK_INSERT_SECOND_END_BIGGEST
 mov pc asr
 mov gr pm
 
-// Jump here if we already inserted gr into list
-$INSERTION_SORT_END_NOT_BIGGEST
+$DANK_INSERT_SECOND_END_NUMLET
 
-//// ---- LOOP BOTTOM ---- ////
-// Check if we should continue
-mov ir pc
-incpc
-mov pc ar
-sub 0
-brz @BUCKET_SORT_END
-bra @BUCKET_SORT_START
+mov ir ar; mov ir pc
+sub 0xFE
+brz @BUCKET_SORT_END; incpc
+bra @DANK_SORT; incpc
+
+
+
+
+
+
+
+//// ---- START OF NORMAL (TRASH) BUCKET SORT ---- ////
+// Start of bucket sort loop
+
+// $BUCKET_SORT_START
+// 
+// // Dereference pc into AR and GR (data[pc_])
+// mov pc asr
+// mov pm ar; mov pm gr
+// 
+// // Hash: rotate left by 7 and only keep bits 3-6 (inclusive)
+// // This means we index on the highest 4 bits of the value
+// // and we have 3 bits of leniency: bucket size of 8
+// rol
+// rol
+// rol
+// rol; mov pc ir
+// and HASH_MASK
+// mov ar asr
+// mov pm hr
+// mov pm asr
+// 
+// mov pm pc; mov pm ar
+// incpc; sub hr
+// mov pc pm
+// 
+// // Prepare for insertion sort here:
+// // Compute length of bucket into LC
+// mov ar lc
+// 
+// // Save start index to PC (for fast dereferencing)
+// mov hr pc
+// 
+// // Start of nested insertion sort
+// $INSERTION_SORT_LOOP_START
+// 
+// // If LC is set, we've reached the end of the elements
+// bls @INSERTION_SORT_END_BIGGEST
+// 
+// 
+// // If(data[pc] < gr) continue;
+// mov pc asr
+// mov pm ar
+// sub gr
+// adn gr; brn @INSERTION_SORT_LOOP_BOTTOM
+// 
+// // Insert and shift here
+// mov gr pm
+// 
+// // Just shift all the elements
+// $INSERTION_SHIFT_LOOP
+// bls @INSERTION_SORT_END_NOT_BIGGEST
+// incpc
+// mov pc asr
+// mov pm gr
+// mov ar pm
+// mov gr ar; declc
+// bra @INSERTION_SHIFT_LOOP
+// 
+// 
+// $INSERTION_SORT_LOOP_BOTTOM
+// declc; bra @INSERTION_SORT_LOOP_START
+// 
+// 
+// // Jump here if gr wasn't inserted into list
+// $INSERTION_SORT_END_BIGGEST
+// mov pc asr
+// mov gr pm
+// 
+// // Jump here if we already inserted gr into list
+// $INSERTION_SORT_END_NOT_BIGGEST
+// 
+// //// ---- LOOP BOTTOM ---- ////
+// // Check if we should continue
+// mov ir pc; mov ir ar
+// incpc
+// sub 0xFF
+// brz @BUCKET_SORT_END
+// bra @BUCKET_SORT_START
 $BUCKET_SORT_END
 
 
@@ -174,36 +258,36 @@ mov ar pc
 const 0x10
 mov ar gr
 
-$LOOP_NEGATIVE
-// Dereference GR into IR and compute length
-mov gr asr
-mov pm ir; mov pm ar
-
-// Subtract start from end and save (the resultant length) into LC
-sub gr
-mov ar lc
-
-// Copy 0x78 to initial list (0xE0)
-$COPY_BUCKET_NEGATIVE
-bls @NEXT_BUCKET_NEGATIVE
-
-mov ir asr; mov ir ar
-mov pm hr
-
-sub 1
-mov ar ir
-
-// Write value to be copied into write index (data[pc] = data[ir])
-mov pc asr
-mov hr pm; incpc; declc
-bra @COPY_BUCKET_NEGATIVE
-$NEXT_BUCKET_NEGATIVE
-
-mov gr ar
-add 0x0C // AR is one above the length, so sub 8.
-mov ar gr
-sub 0x70
-bnz @LOOP_NEGATIVE
+// $LOOP_NEGATIVE
+// // Dereference GR into IR and compute length
+// mov gr asr
+// mov pm ir; mov pm ar
+// 
+// // Subtract start from end and save (the resultant length) into LC
+// sub gr
+// mov ar lc
+// 
+// // Copy 0x78 to initial list (0xE0)
+// $COPY_BUCKET_NEGATIVE
+// bls @NEXT_BUCKET_NEGATIVE
+// 
+// mov ir asr; mov ir ar
+// mov pm hr
+// 
+// add 1
+// mov ar ir
+// 
+// // Write value to be copied into write index (data[pc] = data[ir])
+// mov pc asr
+// mov hr pm; incpc; declc
+// bra @COPY_BUCKET_NEGATIVE
+// $NEXT_BUCKET_NEGATIVE
+// 
+// mov gr ar
+// add 0x0C // AR is one above the length, so sub 8.
+// mov ar gr
+// sub 0x70
+// bnz @LOOP_NEGATIVE
 
 
 
