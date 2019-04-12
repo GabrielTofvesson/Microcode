@@ -154,89 +154,6 @@ brz @BUCKET_SORT_END; incpc
 bra @DANK_SORT; incpc
 
 
-
-
-
-
-
-//// ---- START OF NORMAL (TRASH) BUCKET SORT ---- ////
-// Start of bucket sort loop
-
-// $BUCKET_SORT_START
-// 
-// // Dereference pc into AR and GR (data[pc_])
-// mov pc asr
-// mov pm ar; mov pm gr
-// 
-// // Hash: rotate left by 7 and only keep bits 3-6 (inclusive)
-// // This means we index on the highest 4 bits of the value
-// // and we have 3 bits of leniency: bucket size of 8
-// rol
-// rol
-// rol
-// rol; mov pc ir
-// and HASH_MASK
-// mov ar asr
-// mov pm hr
-// mov pm asr
-// 
-// mov pm pc; mov pm ar
-// incpc; sub hr
-// mov pc pm
-// 
-// // Prepare for insertion sort here:
-// // Compute length of bucket into LC
-// mov ar lc
-// 
-// // Save start index to PC (for fast dereferencing)
-// mov hr pc
-// 
-// // Start of nested insertion sort
-// $INSERTION_SORT_LOOP_START
-// 
-// // If LC is set, we've reached the end of the elements
-// bls @INSERTION_SORT_END_BIGGEST
-// 
-// 
-// // If(data[pc] < gr) continue;
-// mov pc asr
-// mov pm ar
-// sub gr
-// adn gr; brn @INSERTION_SORT_LOOP_BOTTOM
-// 
-// // Insert and shift here
-// mov gr pm
-// 
-// // Just shift all the elements
-// $INSERTION_SHIFT_LOOP
-// bls @INSERTION_SORT_END_NOT_BIGGEST
-// incpc
-// mov pc asr
-// mov pm gr
-// mov ar pm
-// mov gr ar; declc
-// bra @INSERTION_SHIFT_LOOP
-// 
-// 
-// $INSERTION_SORT_LOOP_BOTTOM
-// declc; bra @INSERTION_SORT_LOOP_START
-// 
-// 
-// // Jump here if gr wasn't inserted into list
-// $INSERTION_SORT_END_BIGGEST
-// mov pc asr
-// mov gr pm
-// 
-// // Jump here if we already inserted gr into list
-// $INSERTION_SORT_END_NOT_BIGGEST
-// 
-// //// ---- LOOP BOTTOM ---- ////
-// // Check if we should continue
-// mov ir pc; mov ir ar
-// incpc
-// sub 0xFF
-// brz @BUCKET_SORT_END
-// bra @BUCKET_SORT_START
 $BUCKET_SORT_END
 
 
@@ -258,45 +175,8 @@ mov ar pc
 const 0x10
 mov ar gr
 
-// $LOOP_NEGATIVE
-// // Dereference GR into IR and compute length
-// mov gr asr
-// mov pm ir; mov pm ar
-// 
-// // Subtract start from end and save (the resultant length) into LC
-// sub gr
-// mov ar lc
-// 
-// // Copy 0x78 to initial list (0xE0)
-// $COPY_BUCKET_NEGATIVE
-// bls @NEXT_BUCKET_NEGATIVE
-// 
-// mov ir asr; mov ir ar
-// mov pm hr
-// 
-// add 1
-// mov ar ir
-// 
-// // Write value to be copied into write index (data[pc] = data[ir])
-// mov pc asr
-// mov hr pm; incpc; declc
-// bra @COPY_BUCKET_NEGATIVE
-// $NEXT_BUCKET_NEGATIVE
-// 
-// mov gr ar
-// add 0x0C // AR is one above the length, so sub 8.
-// mov ar gr
-// sub 0x70
-// bnz @LOOP_NEGATIVE
 
-
-
-
-
-
-// COPY POSITIVE
-
-$LOOP_POSITIVE
+$LOOP
 // Dereference GR into IR and compute length
 mov gr asr
 mov pm ar
@@ -311,8 +191,8 @@ add 1
 mov ar ir
 
 // Copy 0x78 to initial list (0xE0)
-$COPY_BUCKET_POSITIVE
-bls @NEXT_BUCKET_POSITIVE
+$COPY_BUCKET
+bls @NEXT_BUCKET
 
 mov ir asr; mov ir ar
 mov pm hr
@@ -323,14 +203,14 @@ mov ar ir
 // Write value to be copied into write index (data[pc] = data[ir])
 mov pc asr
 mov hr pm; incpc; declc
-bra @COPY_BUCKET_POSITIVE
-$NEXT_BUCKET_POSITIVE
+bra @COPY_BUCKET
+$NEXT_BUCKET
 
 mov gr ar
 add 0x0C
 mov ar gr
 sub 0xD0
-bnz @LOOP_POSITIVE
+bnz @LOOP
 
 
 $BREAK
