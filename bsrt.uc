@@ -2,7 +2,8 @@
 #define HASH_MASK 0b1111
 #define BUCKET_SIZE 13
 #define FIRST_BUCKET_ADDRESS 0x10
-#define LAST_BUCKET_ADDRESS  0xe0
+#define LAST_BUCKET_ADDRESS  0xE0
+#define LAST_BUCKET_START_ADDR 0xD3
 
 // PM initial state
 #data 0x00 0x78
@@ -87,15 +88,13 @@ mov pm ar
 sub gr
 adn gr; brn @DANK_INSERT_FIRST_BOTTOM
 
-mov gr pm
+mov gr pm; incpc
 
 $DANK_INSERT_FIRST_SHIFT
-incpc; bls @DANK_INSERT_SECOND_START
-mov pc asr
+mov pc asr; bls @DANK_INSERT_SECOND_START
 mov pm gr
 mov ar pm
-mov gr ar; declc
-bra @DANK_INSERT_FIRST_SHIFT
+mov gr ar; declc; incpc; bra @DANK_INSERT_FIRST_SHIFT
 
 $DANK_INSERT_FIRST_BOTTOM
 declc; bra @DANK_INSERT_FIRST_START
@@ -133,15 +132,13 @@ mov pm ar
 sub gr
 adn gr; brn @DANK_INSERT_SECOND_BOTTOM
 
-mov gr pm
+mov gr pm; incpc
 
 $DANK_INSERT_SECOND_SHIFT
-incpc; bls @DANK_INSERT_SECOND_END_NUMLET
-mov pc asr
+mov pc asr; bls @DANK_INSERT_SECOND_END_NUMLET
 mov pm gr
 mov ar pm
-mov gr ar; declc
-bra @DANK_INSERT_SECOND_SHIFT
+mov gr ar; declc; incpc; bra @DANK_INSERT_SECOND_SHIFT
 
 $DANK_INSERT_SECOND_BOTTOM
 declc; bra @DANK_INSERT_SECOND_LOOP
@@ -161,59 +158,96 @@ bra @DANK_SORT; incpc
 $BUCKET_SORT_END
 
 
-// PC is 0 here. Data is sorted smallest-to largest in memory: just spread out into buckets ;)
-// Perform final merge here
 
-// Set PC to write index
-const 0xE0
-mov ar pc
-
-
-// ######## INSERTION ########## 
-
-// COPY NEGATIVE
-
-// Initialize GR as bucket pointer and IR as element pointer
+// New merge-algo. Saves about 100 cycles over previous version
+const LAST_BUCKET_START_ADDR
+mov ar hr
 const FIRST_BUCKET_ADDRESS
+mov ar pc
+const LIST_START
+
+$MERGE
+mov pc ir
 mov ar gr
-
-
-$LOOP
-// Dereference GR into IR and compute length
-mov gr asr
+mov pc asr; incpc
 mov pm ar
-
-// Subtract start from end and save (the resultant length) into LC
-sub gr
+sub ir
 mov ar lc
-
-// Calcuate the first element of the array and store in IR
 mov gr ar
+$MERGE_MOVE
+mov pc asr; bls @MERGE_BOTTOM
+mov pm gr
+mov ar asr
 add 1
-mov ar ir
+mov gr pm; declc; incpc; bra @MERGE_MOVE
 
-$COPY_BUCKET
-bls @NEXT_BUCKET
-
-mov ir asr; mov ir ar
-mov pm hr
-
-add 1
-mov ar ir
-
-// Write value to be copied into write index (data[pc] = data[ir])
-mov pc asr
-mov hr pm; incpc; declc
-bra @COPY_BUCKET
-$NEXT_BUCKET
-
-
-mov gr ar
-add BUCKET_SIZE
+$MERGE_BOTTOM
 mov ar gr
-sub LAST_BUCKET_ADDRESS
-bnz @LOOP
+mov ir ar
+sub hr
+adn hr; brz @MERGE_END
+add BUCKET_SIZE
+mov ar pc
+mov gr ar; bra @MERGE
 
-
+$MERGE_END
 $BREAK
 halt
+
+
+
+// Old merge-algo
+
+// Set PC to write index
+//const 0xE0
+//mov ar pc
+//
+//
+//// ######## INSERTION ########## 
+//
+//// COPY NEGATIVE
+//
+//// Initialize GR as bucket pointer and IR as element pointer
+//const FIRST_BUCKET_ADDRESS
+//mov ar gr
+//
+//
+//$LOOP
+//// Dereference GR into IR and compute length
+//mov gr asr
+//mov pm ar
+//
+//// Subtract start from end and save (the resultant length) into LC
+//sub gr
+//mov ar lc
+//
+//// Calcuate the first element of the array and store in IR
+//mov gr ar
+//add 1
+//mov ar ir
+//
+//$COPY_BUCKET
+//bls @NEXT_BUCKET
+//
+//mov ir asr; mov ir ar
+//mov pm hr
+//
+//add 1
+//mov ar ir
+//
+//// Write value to be copied into write index (data[pc] = data[ir])
+//mov pc asr
+//mov hr pm; incpc; declc
+//bra @COPY_BUCKET
+//$NEXT_BUCKET
+//
+//
+//mov gr ar
+//add BUCKET_SIZE
+//mov ar gr
+//sub LAST_BUCKET_ADDRESS
+//bnz @LOOP
+//
+//
+//$BREAK
+//halt
