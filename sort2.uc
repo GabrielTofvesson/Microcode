@@ -1,10 +1,21 @@
+// Hi! If you're reading this, you probably want to know what this program does.
+// To that, I say: Good luck and I hope you have patience and a strong will to
+// live, 'cause both negatively impacted by trying to read the code below.
+// This isn't a joke; I feel like someone telling a person to get off the edge
+// of a tall building here: reading the code below WILL negatively impact your
+// life. You have been warned.
+
 #define LIST_START 0xE0
+#define LIST_END 0xFE
+#define LIST_START_MODIFIED 0xDF
+#define LIST_END_MODIFIED 0xFD
 #define HASH_MASK 0b1111000
 #define NEGATIVE_START 0x40
 #define NEGATIVE_END 0x78
 #define POSITIVE_START 0x00
 #define POSITIVE_END 0x38
 #define BUCKET_SIZE 8
+#define BUCKET_INDEX_TRACKER 0b11111000
 
 
 // Set up buckets (with absolute sizes)
@@ -29,9 +40,16 @@
 #data 0x78 0x00 // F (NEGATIVE)
 
 
+// Shift list down by one address, freeing up 0xFF for random-access use
+reset asr
+mov pm hr
+
+const LIST_START_MODIFIED
+mov ar asr
+mov hr pm
 
 // Initialize PC to point at list
-const LIST_START
+//const LIST_START
 mov ar pc
 
 
@@ -48,11 +66,11 @@ mov pm hr
 // Hash HR, partially hash AR.
 // Result of HR-hash is in AR
 // Result of AR-hash is in HR
-brl; mov hr gr
-brl
-brl
-brl
-brl
+brl; mov ar gr // PM[0xFF] = AR 
+brl; reset asr
+brl; mov gr pm
+brl; mov pc asr // Set GR to pre-hash value of HR
+brl; mov pm gr
 brl
 brl
 and HASH_MASK
@@ -94,12 +112,11 @@ mov hr ar
 and HASH_MASK
 mov ar asr
 mov pm pc; mov pm lc
-incpc
+incpc; reset asr
+mov pm gr
+mov ar asr
 mov pc pm
 mov ar pc
-mov ir asr
-mov pm gr
-
 
 
 $SECOND_INSERTION
@@ -128,14 +145,17 @@ mov gr pm
 
 $SECOND_INSERTION_END_NOTBIGGEST
 mov ir ar; mov ir pc
-sub 0xFE
+sub LIST_END_MODIFIED
 brz @BUCKET_SORT_END; incpc
 bra @BUCKET_SORT_START; incpc
 
 $BUCKET_SORT_END
 
 
+//call @BREAK
 
+
+// Merge negative values
 const NEGATIVE_END
 mov ar hr
 const NEGATIVE_START
@@ -165,6 +185,7 @@ mov gr ar; bra @NEGATIVE_MERGE
 
 
 
+// Merge positive values
 $POSITIVE_MERGE_INIT
 const POSITIVE_END
 mov ar hr
@@ -173,7 +194,6 @@ mov ar pc
 mov gr ar   // Pop AR
 
 $POSITIVE_MERGE
-mov pc ir
 mov pc asr; incpc
 mov pm lc
 $POSITIVE_MERGE_MOVE
@@ -185,10 +205,11 @@ mov gr pm; declc; incpc; bra @POSITIVE_MERGE_MOVE
 
 $POSITIVE_MERGE_BOTTOM
 mov ar gr
-mov ir ar
+mov pc ar
+and BUCKET_INDEX_TRACKER
 sub hr
 adn hr; brz @PROGRAM_END
-add BUCKET_SIZE
+adn BUCKET_SIZE
 mov ar pc
 mov gr ar; bra @POSITIVE_MERGE
 
