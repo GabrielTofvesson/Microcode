@@ -276,3 +276,74 @@ operation.
 
 ### L
 Set if **LC** == 0.
+
+
+## Sorting algorithms
+For the sorting competition, we have chosen to focus on implementing bucketsort
+with an inline insertionsort when inserting values into corresponding buckets.
+
+### bucksort.uc
+
+This was the first attempt at a sorting implementation in uASM. It doesn't do
+more than a simple hash and possibly updating some bucket-specific values.
+Nonetheless, it formed a clear basis for future implementations.
+
+Pros:
+* N/A
+
+Cons:
+* N/A
+
+Average cycle count: N/A
+
+
+### bsrt.uc
+
+The first successful uASM bucketsort implementation. It uses the aforementioned
+inline insertionsort. Additionally, it employs a lookup table for pointing to
+buckets; this had the benefit of significantly decreasing the cycles required
+to hash values, as well as allowing for buckets of sizes other than even
+exponents of 2 (as opposed to other implementations). On top of this, it used a
+parallel-hashing system which allowed the rotation step of the hash algorithm
+to be applied to two elements of the list (to be sorted) at once, further
+decreasing the amount of cycles required to perform a hash (per element).
+
+Pros:
+* Variable bucket size
+* Arbitrary bucket arrangement
+* Parallel-hash implementation
+* Uses the most recent merge algorithm (rated around 400 cycles)
+
+Cons:
+* Heavy bookkeeping due to lookup table paired with parallel-hash
+* Inefficiency in merge due to lookup table (average loss of 80 cycles)
+
+Average cycle count: 1250
+
+
+### sort2.uc
+
+A second iteration of the *bsrt* implementation, this one refines the dual-hash
+by omitting the lookup table. This means that bookkeeping can be minimized, as
+it was only necessary due to a lack of available registers. This, of course,
+comes at the cost of not being able to have variable-sized buckets; i.e. their
+sizes must an exponent of 2. A minor optimization that was created for this
+algorithm was the hash-based bookkeeping, wherein a small optimization to
+bookkeeping could be done during the hashing of the list elements. Any
+bookkeeping which does not require the ALU can, in fact, be performed during the
+hashing, since the rotation steps only require AR and HR to be untouched. All
+other operations are permitted.
+
+Pros:
+* Merge: (320-330 cycles)
+    * Direct addressing fits optimally due to register limitations
+    * Optimized regster allocations
+* Minimal bookkeeping since it is mostly performed during the hashing operation
+
+Cons:
+* Bucket sizes must be exponents of 2
+* Fixed bucket indices based on hash
+* Two merge operations required (negative + positive)
+* 95 unused program-memory addresses
+
+Average cycle count: 1100
