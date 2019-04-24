@@ -186,7 +186,7 @@ Move value in **uSP** (**MySPC**) into **uPC**.
 
 
 ### HALT
-Stop execution and set value int **uPC** to 0.
+Stop execution and set value in **uPC** to 0.
 
 
 ### BRA [label]
@@ -236,7 +236,7 @@ IR.
 
 
 ### BST
-Branch to start. This sets uPC = 0.
+Branch to start. This sets value in **uPC** to 0.
 
 
 ### RESET [reg]
@@ -399,3 +399,23 @@ Cons:
 * Optimized LUT requires marginally more arithmetic operations over other variants
 
 Average cycle count: N/A (not fully implemented)
+
+
+### bsrt2.uc
+
+A fourth iteration developed in parallel with *sort3* as a proof-of-concept of
+the recently designed lookup-table replacement for hashing. This version is an
+almost direct copy of *bsrt*, except without a LUT, a K1 jump-table and absolute
+sizes in the bucket headers (as opposed to a pointer to the last element of a
+bucket).
+
+Pros:
+* Highly optimized K1 jump-table
+* Subroutined jump-table for possible reuse elsewhere
+* 13 elements per bucket (+1 over *bsrt*)
+* Low instruction count
+
+Cons:
+* Only sorts one element per iteration
+
+Average cycle count: 1050
