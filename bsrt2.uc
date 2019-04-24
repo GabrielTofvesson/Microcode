@@ -1,9 +1,9 @@
 #define LIST_START 0xE0
 #define HASH_MASK 0b1111
-#define BUCKET_SIZE 13
-#define FIRST_BUCKET_ADDRESS 0x10
+#define BUCKET_SIZE 14
+#define BUCKET_ADDRESS 0x00
 #define LAST_BUCKET_ADDRESS  0xE0
-#define LAST_BUCKET_START_ADDR 0xD3
+#define LAST_BUCKET_START_ADDR 0xD2
 
 
 #optable 0x0 @OT_0
@@ -24,42 +24,22 @@
 #optable 0xf @OT_F
 
 // PM initial state
-
-// Deprecated: LUT to be replaced with K1-jump table
-#data 0x00 0x78
-#data 0x01 0x85
-#data 0x02 0x92
-#data 0x03 0x9f
-#data 0x04 0xac
-#data 0x05 0xb9
-#data 0x06 0xc6
-#data 0x07 0xd3
-#data 0x08 0x10
-#data 0x09 0x1d
-#data 0x0a 0x2a
-#data 0x0b 0x37
-#data 0x0c 0x44
-#data 0x0d 0x51
-#data 0x0e 0x5e
-#data 0x0f 0x6b
-
-// Not deprecated
-#data 0x10 0x00
-#data 0x1d 0x00
-#data 0x2a 0x00
-#data 0x37 0x00
-#data 0x44 0x00
-#data 0x51 0x00
-#data 0x5e 0x00
-#data 0x6b 0x00
-#data 0x78 0x00
-#data 0x85 0x00
-#data 0x92 0x00
-#data 0x9f 0x00
-#data 0xac 0x00
-#data 0xb9 0x00
-#data 0xc6 0x00
-#data 0xd3 0x00
+#data 0x00 0x00
+#data 0x0E 0x00
+#data 0x1C 0x00
+#data 0x2A 0x00
+#data 0x38 0x00
+#data 0x46 0x00
+#data 0x54 0x00
+#data 0x62 0x00
+#data 0x70 0x00
+#data 0x7e 0x00
+#data 0x8c 0x00
+#data 0x9a 0x00
+#data 0xa8 0x00
+#data 0xb6 0x00
+#data 0xc4 0x00
+#data 0xd2 0x00
 
 
 // TODO: Include register initial-state compiler directive (saves, like, 2 cycles max)
@@ -69,7 +49,7 @@ mov ar pc
 
 
 //// ---- START OF DANK SORT ---- ////
-$DANK_SORT
+$SORT
 
 mov pc asr; incpc
 mov pm ir; call @JTABLE // Call jumptable. This also copies PC to HR
@@ -85,36 +65,40 @@ mov ar pc
 
 
 // First insertion
-$DANK_INSERT_FIRST_START
+$INSERT_START
 
-incpc; bls @DANK_INSERT_FIRST_END_BIGGEST
-
-mov pc asr
+// Load a value and compare with value to be inserted
+// If L is set, value is greater than all other values in bucket
+incpc
+mov pc asr; bls @INSERT_END_BIGGEST
 mov pm ar
 sub ir
-adn ir; brn @DANK_INSERT_FIRST_BOTTOM
+adn ir; brn @INSERT_BOTTOM
 
+// We found where to insert value. Insert it
 mov ir pm; incpc
 
-$DANK_INSERT_FIRST_SHIFT
-mov pc asr; bls @DANK_INSERT_FIRST_END_NUMLET
+// Shift values after the value we inserted
+$INSERT_SHIFT
+mov pc asr; bls @INSERT_END_NUMLET
 mov pm gr
 mov ar pm
-mov gr ar; declc; incpc; bra @DANK_INSERT_FIRST_SHIFT
+mov gr ar; declc; incpc; bra @INSERT_SHIFT
 
-$DANK_INSERT_FIRST_BOTTOM
-declc; bra @DANK_INSERT_FIRST_START
+// Continue to next value in bucket for comparison
+$INSERT_BOTTOM
+declc; bra @INSERT_START
 
-$DANK_INSERT_FIRST_END_BIGGEST
-mov pc asr
+// Value we are inserting was the biggest value in the bucket
+$INSERT_END_BIGGEST
 mov ir pm
 
-$DANK_INSERT_FIRST_END_NUMLET
+$INSERT_END_NUMLET
 
+// Check if we've sorted all values. If we have, merge then, otherwise return to top of bucketsort
 mov hr ar; mov hr pc
 sub 0
-brz @BUCKET_SORT_END
-bra @DANK_SORT
+bnz @SORT
 
 
 $BUCKET_SORT_END
@@ -122,7 +106,7 @@ $BUCKET_SORT_END
 
 const LAST_BUCKET_START_ADDR
 mov ar hr
-const FIRST_BUCKET_ADDRESS
+const BUCKET_ADDRESS
 mov ar pc
 const LIST_START
 
@@ -159,67 +143,67 @@ mov pc hr; bop
 
 // IR OP-field jump table
 $OT_0
-const 0x78
+const 0x70
 mov ar asr; ret
 
 $OT_1
-const 0x85
+const 0x7e
 mov ar asr; ret
 
 $OT_2
-const 0x92
+const 0x8c
 mov ar asr; ret
 
 $OT_3
-const 0x9f
+const 0x9a
 mov ar asr; ret
 
 $OT_4
-const 0xac
+const 0xa8
 mov ar asr; ret
 
 $OT_5
-const 0xb9
+const 0xb6
 mov ar asr; ret
 
 $OT_6
-const 0xc6
+const 0xc4
 mov ar asr; ret
 
 $OT_7
-const 0xd3
+const 0xd2
 mov ar asr; ret
 
 $OT_8
-const 0x10
+const 0x00
 mov ar asr; ret
 
 $OT_9
-const 0x1d
+const 0x0e
 mov ar asr; ret
 
 $OT_A
-const 0x2a
+const 0x1c
 mov ar asr; ret
 
 $OT_B
-const 0x37
+const 0x2a
 mov ar asr; ret
 
 $OT_C
-const 0x44
+const 0x38
 mov ar asr; ret
 
 $OT_D
-const 0x51
+const 0x46
 mov ar asr; ret
 
 $OT_E
-const 0x5e
+const 0x54
 mov ar asr; ret
 
 $OT_F
-const 0x6b
+const 0x62
 mov ar asr; ret
 
 
@@ -236,7 +220,7 @@ mov ar asr; ret
 //// COPY NEGATIVE
 //
 //// Initialize GR as bucket pointer and IR as element pointer
-//const FIRST_BUCKET_ADDRESS
+//const BUCKET_ADDRESS
 //mov ar gr
 //
 //
