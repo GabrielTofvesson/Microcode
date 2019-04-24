@@ -225,6 +225,20 @@ Branch to address of label if **C-flag** is 0.
 Branch to address of label if **O-flag** is 0.
 
 
+### BOP
+Branch to address specified by entry in optable pointed to by highest 4 bits
+in IR.
+
+
+### BAM
+Branch to address specified by entry in addressing mode pointed to by M-bits in
+IR.
+
+
+### BST
+Branch to start. This sets uPC = 0.
+
+
 ### RESET [reg]
 Sets all bits in the specified register to 1.
 
