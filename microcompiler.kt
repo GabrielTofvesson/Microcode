@@ -9,12 +9,12 @@ enum class ALU(val value: Int, val parameters: Int = 1) {
     ORR(0b0111),    // Bitwise OR with bus and AR
     ADN(0b1000),    // Add bus to AR without setting flags
     LSL(0b1001, 0), // Logical shift left AR
-    BSL(0b1010, 0), // Shift contents of (AR and HR) left (32-bit shift)
+    ISL(0b1010, 0), // Shift contents of (AR and HR) left (32-bit shift)
     ASR(0b1011, 0), // Arithmetic shift right
-    BSR(0b1100, 0), // Signed big shift right
+    ISR(0b1100, 0), // Signed big shift right
     LSR(0b1101, 0), // Logical shift right AR
     ROL(0b1110, 0), // Rotate AR left
-    BRL(0b1111, 0); // Rotate ARHR left (32-bit rotate)
+    IRL(0b1111, 0); // Rotate ARHR left (32-bit rotate)
 
     companion object {
         fun locate(value: Int) = values().first{ it.value == value }
