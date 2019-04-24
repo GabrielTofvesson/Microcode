@@ -142,18 +142,50 @@ fun main(args: Array<String>){
         else pIndex = value
     }
     for(rawValue in weaveData){
-        val value = rawValue.replace(" ", "").replace("\t", "")
+        val value = {
+            var v = rawValue.replace(" ", "").replace("\t", "")
+            
+            // Return
+            if(v.indexOf("#") > 0) v.substring(0, v.indexOf("#")) else v
+        }()
         
-        if(value.length == 0 || value.startsWith("#")) continue
-        else if((weaveUCode && index() >= state.microMemory.size) || (!weaveUCode && index() >= state.programMemory.size)) error("Memory out of bounds: ${index()}! Did you pass too much data?")
+        if(value.length == 0) continue
         else if(value.startsWith("@")){
             if(value == "@u") weaveUCode = true
             else if(value == "@p") weaveUCode = false
+            else if(value.startsWith("@k1")){
+                // Parse K1 table entry
+                if(value.length != 6)
+                    error("Badly formatted K1 declaration: $rawValue")
+                val index = value.substring(3, 4).toInt(16)
+                val k1Value = value.substring(4, 6).toInt(16).toByte()
+                if(k1Value < 0)
+                    error("Invalid K1 address pointer (must be in range 00-7F): $rawValue")
+
+                state.k1[index] = k1Value
+            }
+            else if(value.startsWith("@k2")){
+                // Parse K2 table entry
+                if(value.length != 6)
+                    error("Badly formatted K2 declaration: $rawValue")
+
+                val index = value.substring(3, 4).toInt(16)
+                if(index > 4)
+                    error("Invalid K2 index value (must be in range 0-3): $rawValue")
+
+
+                val k2Value = value.substring(4, 6).toInt(16).toByte()
+                if(k2Value < 0)
+                    error("Invalid K2 address pointer (must be in range 00-7F): $rawValue")
+
+                state.k2[index] = k2Value
+            }
             else if(value.startsWith("@0x")) sIdx(Integer.parseInt(value.substring(3), 16))
             else sIdx(Integer.parseInt(value.substring(1), 10))
 
             continue
         }
+        else if((weaveUCode && index() >= state.microMemory.size) || (!weaveUCode && index() >= state.programMemory.size)) error("Memory out of bounds: ${index()}! Did you pass too much data?")
         else if((weaveUCode && value.length != 7) || (!weaveUCode && value.length != 4)) error("Cannot weave data of bad length: $value")
         else try{
             if(weaveUCode) state.microMemory[index()] = Integer.parseInt(value, 16)
