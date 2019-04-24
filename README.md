@@ -95,7 +95,7 @@ Performs a logical shift left of **AR**.
 *Sets flags: Z, N, C*
 
 
-### BSL
+### ISL
 Performs a logical shift left of **AR** and **HR** as if they were one 32-bit
 register where **AR** corresponds to the most-significant bits.
 
@@ -116,7 +116,7 @@ Performs an arithmetic shift right on **AR**.
 *Sets flags: Z, N, C*
 
 
-### BSR
+### ISR
 Performs an arithmetic shift right of **AR** and **HR** as if they were one
 32-bit register where **AR** corresponds to the most-significant bits.
 
@@ -147,7 +147,7 @@ Performs an arithmetic rotate right on **AR**.
 *Sets flags: Z, N, C*
 
 
-### BRL
+### IRL
 Performs an arithmetic shift left of **AR** and **HR** as if they were one
 32-bit register where **AR** corresponds to the most-significant bits.
 
@@ -244,6 +244,7 @@ functionally indistinguishable to the compiler.
 ### \#data \[address] [const]
 Define an initial value in the program memory at the given address.
 
+
 ### $[label]
 Define a compile-time label at the given position in the microprogram. Labels
 can be referenced using an '@' symbol.
@@ -253,6 +254,22 @@ For example: *$BAR* would declare a label *BAR* which can be referenced with
 
 **NOTE**: Label names are case-insensitive; i.e. @*FOO* and @*foo* are
 functionally indistinguishable to the compiler.
+
+
+### \#optable \[index] {[label] | [const]}
+Declare an entry in the opcode jump table (K1).
+
+**NOTE**: The given index must be at most 15 and at least 0 and in the case of
+a constant being supplied as the value, this value my not be negative nor be
+greater than 127.
+
+
+### \#amode \[index] {[label] | [const]}
+Declare an entry in the addressing mode jump table (K2).
+
+**NOTE**: The given index must be at most 3 and at least 0 and in the case of
+a constant being supplied as the value, this value my not be negative nor be
+greater than 127.
 
 
 ## Flags
