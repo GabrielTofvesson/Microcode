@@ -1,5 +1,18 @@
+#optable 0x0 @BREAK
+#optable 0x1 @BREAK
+#optable 0x2 @BREAK
+#optable 0x3 @BREAK
+#optable 0x4 @BREAK
+#optable 0x5 @BREAK
+#optable 0x6 @BREAK
+#optable 0x7 @BREAK
+#optable 0x9 @BREAK
+#optable 0xa @BREAK
+#optable 0xb @BREAK
+#optable 0xc @BREAK
+#optable 0xd @BREAK
+#optable 0xe @BREAK
 #optable 0xf @BREAK
-#amode 3 @BREAK
 
 
 #define LIST_START 0xE0
