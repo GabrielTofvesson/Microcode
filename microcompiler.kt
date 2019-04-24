@@ -194,27 +194,33 @@ class AddressReference{
 
     private constructor(address: Int?, labelName: String?){
         this.address = address ?: -1
-        actualAddress = this.address
+        _actualAddress = this.address
         this.labelName = labelName
         if(address == null && labelName == null) throw RuntimeException("Reference must be accessible by name or address")
     }
 
-    var actualAddress: Int
-        private set
+    val actualAddress: Int
+        get() {
+            if(_actualAddress == -1)
+                throw RuntimeException("Unresolved label reference: $labelName")
+            return _actualAddress
+        }
+
+    private var _actualAddress: Int
 
     private fun checkResolved(){
-        if(actualAddress != -1) throw RuntimeException("Address already resolved")
+        if(_actualAddress != -1) throw RuntimeException("Address already resolved")
     }
 
     fun resolveConstant(value: Int){
         checkResolved()
-        actualAddress = value
+        _actualAddress = value
     }
 
     fun resolveAddress(target: Int){
         if(target > 128 || target < 0) throw RuntimeException("Invalid target address")
         checkResolved()
-        actualAddress = target
+        _actualAddress = target
     }
 
     companion object {
@@ -378,6 +384,9 @@ fun main(args: Array<String>){
     var currentLine = 0
     var lineCount = 0
     val insns = ArrayList<MicroInstruction>()
+    val k1 = HashMap<Int, AddressReference>()
+    val k2 = HashMap<Int, AddressReference>()
+
     println("@p")
     for(line in file.readText().replace("\r", "").split("\n")){
         ++lineCount
@@ -422,6 +431,44 @@ fun main(args: Array<String>){
                 }
                 continue
             }
+
+            // Define optable (k1) entry
+            if(actualCode.startsWith("#optable ")){
+                // Parse K1 declaration
+                val substr = actualCode.substring(9)
+                if(substr.indexOf(" ") == -1) throw RuntimeException("Bad optable declaration: $actualCode")
+
+                val address = substr.substring(0, substr.indexOf(" "))
+                val constant = substr.substring(substr.indexOf(" ") + 1).replace(" ", "").replace("\t", "")
+
+                try{
+                    k1[readNumber(address, 0xF)] =
+                        if(constant.startsWith("@")) AddressReference.makeReference(constant.substring(1))
+                        else AddressReference.makeReference(readNumber(constant, 127))
+                }catch(e: NumberFormatException){
+                    throw RuntimeException("Unknown number format for optable declaration: $actualCode")
+                }
+                continue
+            }
+
+            // Define addressing mode (k2) entry
+            if(actualCode.startsWith("#amode ")){
+                // Parse K2 declarationa
+                val substr = actualCode.substring(7)
+                if(substr.indexOf(" ") == -1) throw RuntimeException("Bad amode declaration: $actualCode")
+
+                val address = substr.substring(0, substr.indexOf(" "))
+                val constant = substr.substring(substr.indexOf(" ") + 1).replace(" ", "").replace("\t", "")
+
+                try{
+                    k2[readNumber(address, 0x3)] =
+                        if(constant.startsWith("@")) AddressReference.makeReference(constant.substring(1))
+                        else AddressReference.makeReference(readNumber(constant, 127))
+                }catch(e: NumberFormatException){
+                    throw RuntimeException("Unknown number format for amode declaration: $actualCode")
+                }
+                continue
+            }
     
             val instr = parseInstruction(actualCode)
             if(instr == null) continue // Blank line
@@ -437,12 +484,27 @@ fun main(args: Array<String>){
         System.exit(1)
     }
 
-    System.err.println("INFO: Microcompilation succeeded! Instruction count: $currentLine")
-
+    // Convert instructions to strings
+    // Also resolve address references here
     for(instr in insns)
         builder.append(instr.compiledValue.toInstruction()).append("\n")
+    
+    // Write K-table data ahead of instructions
+    for(k1Pair in k1)
+        println("@k1${k1Pair.key.toString(16)}${k1Pair.value.actualAddress.toPaddedHexString(2)}")
+
+    for(k2Pair in k2)
+        println("@k2${k2Pair.key.toString(16)}${k2Pair.value.actualAddress.toPaddedHexString(2)}")
+    
+    // Write instructions
     print(builder.toString())
+    
+    // Informational message
+    System.err.println("INFO: Microcompilation succeeded! Instruction count: $currentLine")
 }
 
 
-
+fun Int.toPaddedHexString(len: Int): String {
+    val str = toString(16)
+    return if(str.length >= len) str else ("0".repeat(len - str.length) + str)
+}
