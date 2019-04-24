@@ -347,3 +347,24 @@ Cons:
 * 95 unused program-memory addresses
 
 Average cycle count: 1100
+
+
+### sort3.uc
+
+A third iteration of the *bsrt* implementation: this time entirely scrapping
+the bucket header, opting to delegate this behaviour to the lookup-table itself.
+I.e. the lookup table no long points to the start of a bucket (as this can be
+inferred later), but rather points to the last element of the bucket.
+Additionally, this implementation scraps the insertion-sort performed in the
+bucket sort, delegating this task to the merge stage of the sorting algorithm.
+
+Pros:
+* Constant-time bucket sort (406 cycles)
+* More optimally used LUT
+* No bookkeeping during bucket-sort
+
+Cons:
+* Non-constant-time merge
+* Optimized LUT requires marginally more arithmetic operations over other variants
+
+Average cycle count: N/A (not fully implemented)
