@@ -68,6 +68,9 @@ enum class LoopCounter(val value: Int) {
 
 enum class SEQ(val value: Int) {
     INC(0b0000),
+    BOP(0b0001), // Branch on opcode
+    BAM(0b0010), // Branch on addressing mode
+    BST(0b0011), // Branch to start (set uPC = 0)
     CAL(0b0110),
     RET(0b0111),
     BRA(0b0101),
@@ -352,6 +355,9 @@ fun parseInstruction(line: String): MicroInstruction? {
         else if(ALU.matchName(shave.substring(0, if(shave.indexOf(" ") == -1) shave.length else shave.indexOf(" "))) != null) return parseALU(shave)
         else if(shave.startsWith("call ")) return parseCALL(shave)
         else if(shave == "ret") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.RET)
+        else if(shave == "bop") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.BOP)
+        else if(shave == "bam") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.BAM)
+        else if(shave == "bst") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.BST)
         else if(shave.startsWith("b") && shave.indexOf(" ") != -1 && SEQ.matchName(shave.substring(0, shave.indexOf(" "))) != null) return parseBranch(shave)
         else if(shave == "halt") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.HALT)
         else if(shave.startsWith("lcset")) return parseLCSet(shave)
