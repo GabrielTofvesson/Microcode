@@ -47,10 +47,10 @@ mov pc asr; incpc
 mov pm hr
 
 // Shift AR and HR
-brl; mov pm gr
-brl
-brl
-brl
+irl; mov pm gr
+irl
+irl
+irl
 and HASH_MASK // Completely hash value from HR
 mov ar asr
 mov pm ar

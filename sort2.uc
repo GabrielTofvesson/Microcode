@@ -66,13 +66,13 @@ mov pm hr
 // Hash HR, partially hash AR.
 // Result of HR-hash is in AR
 // Result of AR-hash is in HR
-brl; mov ar gr // PM[0xFF] = AR 
-brl; reset asr
-brl; mov gr pm
-brl; mov pc asr // Set GR to pre-hash value of HR
-brl; mov pm gr
-brl
-brl
+irl; mov ar gr // PM[0xFF] = AR 
+irl; reset asr
+irl; mov gr pm
+irl; mov pc asr // Set GR to pre-hash value of HR
+irl; mov pm gr
+irl
+irl
 and HASH_MASK
 
 mov ar asr

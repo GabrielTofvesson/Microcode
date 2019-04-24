@@ -56,10 +56,10 @@ mov pm ar
 mov pc asr
 mov pm hr
 
-brl; mov hr gr
-brl
-brl
-brl
+irl; mov hr gr
+irl
+irl
+irl
 and HASH_MASK
 mov ar asr
 mov pm ar; mov pm asr
