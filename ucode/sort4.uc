@@ -1,19 +1,14 @@
 // Hi! If you're reading this, you probably want to know what this program does
 // To that, I say: Good luck and I hope you have patience and a strong will to
-// live, 'cause both negatively impacted by trying to read the code below.
+// live, 'cause both will be negatively impacted by trying to read the code
+// below.
 // This isn't a joke; I feel like someone telling a person to get off the edge
 // of a tall building here: reading the code below WILL negatively impact your
 // life. You have been warned.
 
 #define LIST_START 0xE0
-#define LIST_END 0xFE
-#define LIST_START_MODIFIED 0xDF
-#define LIST_END_MODIFIED 0xFD
-#define HASH_MASK 0b1111000
-#define NEGATIVE_START 0x40
-#define NEGATIVE_END 0x78
-#define POSITIVE_START 0x00
-#define POSITIVE_END 0x38
+#define LIST_END 0x00
+#define HIGHEST_BUCKET 0x78
 #define BUCKET_SIZE 8
 #define BUCKET_INDEX_TRACKER 0b11111000
 
@@ -56,178 +51,118 @@
 #data 0x78 0x00 // F (NEGATIVE)
 
 
-// Shift list down by one address, freeing up 0xFF for random-access use
-reset asr
-mov pm hr
-
-const LIST_START_MODIFIED
-mov ar asr
-mov hr pm
+// Set all GR-registers to -1, so that we always can call "sub gr" to increment
+// AR, no matter what value we have in IR ;)
+const 0x100
+mov ar ir
+reset gr
+reset grm
+const 0xB00
+mov ar ir
+reset gr
+reset grm
 
 // Initialize PC to point at list
-//const LIST_START
+const LIST_START
 mov ar pc
 
 
 $BUCKET_SORT_START
 
-// AR = PM[PC]
-// HR = PM[PC + 1]
+// First value to be sorted
 mov pc asr; incpc
 mov pm ir; call @JTABLE
 
-mov pc asr
-mov pm hr
-
-// Hash HR, partially hash AR.
-// Result of HR-hash is in AR
-// Result of AR-hash is in HR
-irl; mov ar gr // PM[0xFF] = AR 
-irl; reset asr
-irl; mov gr pm
-irl; mov pc asr // Set GR to pre-hash value of HR
-irl; mov pm gr
-irl
-irl
-and HASH_MASK
-
-mov ar asr
-mov pm lc; mov pm pc
-incpc
+mov pm pc; mov pm lc
+sub gr; incpc
 mov pc pm
 mov ar pc
 
 $FIRST_INSERTION
-
-incpc; bls @FIRST_INSERTION_END_BIGGEST
-
-mov pc asr
+mov pc asr; bls @FIRST_INSERTION_END_BIGGEST
 mov pm ar
-sub gr
-adn gr; brn @FIRST_INSERTION_BOTTOM
+sub ir
+adn ir; brn @FIRST_INSERTION_BOTTOM
 
-mov gr pm; incpc
+mov ir pm; incpc
 
 $FIRST_INSERTION_SHIFT
 mov pc asr; bls @FIRST_INSERTION_END_NOTBIGGEST
-mov pm gr
+mov pm ir
 mov ar pm
-mov gr ar; declc; incpc; bra @FIRST_INSERTION_SHIFT
+mov ir ar; declc; incpc; bra @FIRST_INSERTION_SHIFT
 
 $FIRST_INSERTION_BOTTOM
-declc; bra @FIRST_INSERTION
+declc; incpc; bra @FIRST_INSERTION
 
 $FIRST_INSERTION_END_BIGGEST
-mov pc asr
-mov gr pm
+mov ir pm
 
 $FIRST_INSERTION_END_NOTBIGGEST
 
-// Prepare second insertion (minimal bookkeeping)
-mov hr ar
-and HASH_MASK
-mov ar asr
+
+
+// Second value to be sorted
+mov hr pc
+mov pc asr; incpc
+mov pm ir; call @JTABLE
 mov pm pc; mov pm lc
-incpc; reset asr
-mov pm gr
-mov ar asr
+sub gr; incpc
 mov pc pm
 mov ar pc
 
-
 $SECOND_INSERTION
-
-incpc; bls @SECOND_INSERTION_END_BIGGEST
-
-mov pc asr
+mov pc asr; bls @SECOND_INSERTION_END_BIGGEST
 mov pm ar
-sub gr
-adn gr; brn @SECOND_INSERTION_BOTTOM
+sub ir
+adn ir; brn @SECOND_INSERTION_BOTTOM
 
-mov gr pm; incpc
+mov ir pm; incpc
 
 $SECOND_INSERTION_SHIFT
 mov pc asr; bls @SECOND_INSERTION_END_NOTBIGGEST
-mov pm gr
+mov pm ir
 mov ar pm
-mov gr ar; declc; incpc; bra @SECOND_INSERTION_SHIFT
+mov ir ar; declc; incpc; bra @SECOND_INSERTION_SHIFT
 
 $SECOND_INSERTION_BOTTOM
-declc; bra @SECOND_INSERTION
+declc; incpc; bra @SECOND_INSERTION
 
 $SECOND_INSERTION_END_BIGGEST
-mov pc asr
-mov gr pm
+mov ir pm
 
 $SECOND_INSERTION_END_NOTBIGGEST
-mov ir ar; mov ir pc
-sub LIST_END_MODIFIED
-brz @BUCKET_SORT_END; incpc
-bra @BUCKET_SORT_START; incpc
+mov hr ar; mov hr pc
+sub LIST_END
+bnz @BUCKET_SORT_START
 
 $BUCKET_SORT_END
 
-
-//call @BREAK
-
-
-// Merge negative values
-const NEGATIVE_END
+const BUCKET_SIZE
 mov ar hr
-const NEGATIVE_START
+const HIGHEST_BUCKET
 mov ar pc
 const LIST_START
 
-$NEGATIVE_MERGE
-mov pc ir
+
+$MERGE
 mov pc asr; incpc
 mov pm lc
-$NEGATIVE_MERGE_MOVE
-mov pc asr; bls @NEGATIVE_MERGE_BOTTOM
+
+$MERGE_MOVE
+mov pc asr; bls @MERGE_BOTTOM
 mov pm gr
 mov ar asr
 add 1
-mov gr pm; declc; incpc; bra @NEGATIVE_MERGE_MOVE
+mov gr pm; declc; incpc; bra @MERGE_MOVE
 
-$NEGATIVE_MERGE_BOTTOM
-mov ar gr
-mov ir ar
-sub hr
-adn hr; brz @POSITIVE_MERGE_INIT
-add BUCKET_SIZE
-mov ar pc
-mov gr ar; bra @NEGATIVE_MERGE
-
-
-
-
-// Merge positive values
-$POSITIVE_MERGE_INIT
-const POSITIVE_END
-mov ar hr
-const POSITIVE_START
-mov ar pc
-mov gr ar   // Pop AR
-
-$POSITIVE_MERGE
-mov pc asr; incpc
-mov pm lc
-$POSITIVE_MERGE_MOVE
-mov pc asr; bls @POSITIVE_MERGE_BOTTOM
-mov pm gr
-mov ar asr
-add 1
-mov gr pm; declc; incpc; bra @POSITIVE_MERGE_MOVE
-
-$POSITIVE_MERGE_BOTTOM
+$MERGE_BOTTOM
 mov ar gr
 mov pc ar
 and BUCKET_INDEX_TRACKER
-sub hr
-adn hr; brz @PROGRAM_END
-adn BUCKET_SIZE
+sub hr; brz @PROGRAM_END
 mov ar pc
-mov gr ar; bra @POSITIVE_MERGE
+mov gr ar; bra @MERGE
 
 
 $PROGRAM_END
@@ -239,70 +174,70 @@ halt
 
 // Jump-table subroutine
 $JTABLE
-mov pm hr; bop
+mov pc hr; bop
 
 
 // IR OP-field jump table
 $OT_0
-const 0x70
-mov ar asr; ret
-
-$OT_1
-const 0x7e
-mov ar asr; ret
-
-$OT_2
-const 0x8c
-mov ar asr; ret
-
-$OT_3
-const 0x9a
-mov ar asr; ret
-
-$OT_4
-const 0xa8
-mov ar asr; ret
-
-$OT_5
-const 0xb6
-mov ar asr; ret
-
-$OT_6
-const 0xc4
-mov ar asr; ret
-
-$OT_7
-const 0xd2
-mov ar asr; ret
-
-$OT_8
-const 0x00
-mov ar asr; ret
-
-$OT_9
-const 0x0e
-mov ar asr; ret
-
-$OT_A
-const 0x1c
-mov ar asr; ret
-
-$OT_B
-const 0x2a
-mov ar asr; ret
-
-$OT_C
 const 0x38
 mov ar asr; ret
 
+$OT_1
+const 0x30
+mov ar asr; ret
+
+$OT_2
+const 0x28
+mov ar asr; ret
+
+$OT_3
+const 0x20
+mov ar asr; ret
+
+$OT_4
+const 0x18
+mov ar asr; ret
+
+$OT_5
+const 0x10
+mov ar asr; ret
+
+$OT_6
+const 0x08
+mov ar asr; ret
+
+$OT_7
+const 0x00
+mov ar asr; ret
+
+$OT_8
+const 0x78
+mov ar asr; ret
+
+$OT_9
+const 0x70
+mov ar asr; ret
+
+$OT_A
+const 0x68
+mov ar asr; ret
+
+$OT_B
+const 0x60
+mov ar asr; ret
+
+$OT_C
+const 0x58
+mov ar asr; ret
+
 $OT_D
-const 0x46
+const 0x50
 mov ar asr; ret
 
 $OT_E
-const 0x54
+const 0x48
 mov ar asr; ret
 
 $OT_F
-const 0x62
+const 0x40
 mov ar asr; ret
