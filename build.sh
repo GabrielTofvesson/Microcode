@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MODULE_PATH=$(realpath $PWD/${0%build\.sh})
+MODULE_PATH=$(realpath ${0%/*})
 
 # JARs
 UCOMP=microcompiler.jar
