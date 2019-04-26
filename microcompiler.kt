@@ -109,11 +109,11 @@ open class MicroInstruction(private val _compiledValue: Int, val isConstInstr: B
             (seq.value shl 7)
         ) and (-1 ushr 7))
 
-    constructor(aluOP: ALU, toBus: ToBus): this(aluOP, toBus, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.INC)
+    constructor(aluOP: ALU, toBus: ToBus, setM: Boolean = false): this(aluOP, toBus, FromBus.NONE, setM, false, LoopCounter.NONE, SEQ.INC)
     constructor(aluOP: ALU, constant: Int): this((aluOP.value shl 21) or (ToBus.CONST.value shl 18) or (constant onlyBits 16), true)
     constructor(aluOP: ALU): this(aluOP, 0)
-    constructor(toBus: ToBus, fromBus: FromBus): this(ALU.NOP, toBus, fromBus, false, false, LoopCounter.NONE, SEQ.INC)
-    constructor(toBus: ToBus): this(ALU.NOP, toBus, FromBus.NONE, false, false, LoopCounter.BUS, SEQ.INC)
+    constructor(toBus: ToBus, fromBus: FromBus, setM: Boolean = false): this(ALU.NOP, toBus, fromBus, setM, false, LoopCounter.NONE, SEQ.INC)
+    constructor(toBus: ToBus, setM: Boolean = false): this(ALU.NOP, toBus, FromBus.NONE, setM, false, LoopCounter.BUS, SEQ.INC)
     
     var addressReference: AddressReference? = null
 
@@ -187,7 +187,7 @@ enum class Register(val busValue: Int, val canRead: Boolean = true) {
     GR(0b110);
 
     companion object {
-        fun lookup(name: String) = values().firstOrNull{ it.name.toLowerCase() == name.toLowerCase() }
+        fun lookup(name: String) = if(name.toLowerCase() == "grm") (GR to true) else (values().firstOrNull{ it.name.toLowerCase() == name.toLowerCase() } to false)
     }
 }
 
@@ -249,16 +249,18 @@ fun parseMOV(instr: String): MicroInstruction {
     if(args.size != 3) throw RuntimeException("MOV instruction requires two arguments: $instr")
     if(args[1] == args[2]) throw RuntimeException("Cannot move from register being moved to: $instr")
 
-    val a = Register.lookup(args[1])!!
-    if(!a.canRead) throw RuntimeException("Cannot read from register: $instr")
+    val (a, setMA) = Register.lookup(args[1])
+    if(!a!!.canRead) throw RuntimeException("Cannot read from register: $instr")
     
     
-    if(args[2] == "lc") return MicroInstruction(ToBus.locate(a.busValue))
+    if(args[2] == "lc") return MicroInstruction(ToBus.locate(a.busValue), setMA)
 
-    val b = Register.lookup(args[2])!!
-    if(b == Register.AR) return MicroInstruction(ALU.MOV, ToBus.locate(a.busValue))
+    val (b, setMB) = Register.lookup(args[2])
+    if(a == b!! && setMA != setMB)
+        throw RuntimeException("Cannot directly move data between multiplexed registers!")
+    if(b == Register.AR) return MicroInstruction(ALU.MOV, ToBus.locate(a.busValue), setMA || setMB)
 
-    return MicroInstruction(ToBus.locate(a.busValue), FromBus.locate(b.busValue))
+    return MicroInstruction(ToBus.locate(a.busValue), FromBus.locate(b.busValue), setMA || setMB)
 }
 
 fun readNumber(literal: String, max: Int): Int {
@@ -298,11 +300,11 @@ fun parseALU(instr: String): MicroInstruction {
         // NaN
     }
 
-    val source = Register.lookup(args[1])
+    val (source, setM) = Register.lookup(args[1])
     if(source == null) return MicroInstruction(aluOperation) withReference AddressReference.makeReference(args[1])
     if(!source.canRead) throw RuntimeException("Cannot read from source: $instr")
 
-    return MicroInstruction(aluOperation, ToBus.locate(source.busValue))
+    return MicroInstruction(aluOperation, ToBus.locate(source.busValue), setM)
 }
 
 fun parseLabelReference(ref: String): AddressReference? {
@@ -362,7 +364,10 @@ fun parseInstruction(line: String): MicroInstruction? {
         else if(shave == "halt") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.NONE, SEQ.HALT)
         else if(shave.startsWith("lcset")) return parseLCSet(shave)
         else if(shave == "declc") return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.NONE, false, false, LoopCounter.DEC, SEQ.INC)
-        else if(shave.startsWith("reset")) return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.locate(Register.lookup(shave.substring(6))!!.busValue), false, false, LoopCounter.NONE, SEQ.INC)
+        else if(shave.startsWith("reset")){
+            val (resetReg, setM) = Register.lookup(shave.substring(6))
+            return MicroInstruction(ALU.NOP, ToBus.NONE, FromBus.locate(resetReg!!.busValue), setM, false, LoopCounter.NONE, SEQ.INC)
+        }
         else throw RuntimeException("Unknown instruction: $shave")
     }else{
         var result: MicroInstruction? = null
