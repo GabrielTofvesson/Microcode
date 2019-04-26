@@ -42,7 +42,8 @@
 #data 0xd2 0x00
 
 
-// TODO: Include register initial-state compiler directive (saves, like, 2 cycles max)
+// TODO: Include register initial-state compiler directive
+// (saves, like, 2 cycles max)
 // Set PC to LIST_START
 const LIST_START
 mov ar pc
@@ -95,7 +96,8 @@ mov ir pm
 
 $INSERT_END_NUMLET
 
-// Check if we've sorted all values. If we have, merge then, otherwise return to top of bucketsort
+// Check if we've sorted all values. If we have, merge then,
+// otherwise return to top of bucketsort
 mov hr ar; mov hr pc
 sub 0
 bnz @SORT
