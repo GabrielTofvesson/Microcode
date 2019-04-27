@@ -65,75 +65,46 @@ reset grm
 // Initialize PC to point at list
 const LIST_START
 mov ar pc
-
-$BUCKET_SORT_START
-
-// First value to be sorted
 mov pc asr; incpc
+
+//$BUCKET_SORT_START
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
 mov pm ir; call @JTABLE
 
-// Second value to be sorted
-mov pc asr; incpc
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
+mov pm ir; call @JTABLE
 mov pm ir; call @JTABLE
 
-// Third value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
 
-// Fourth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Fifth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Sixth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Seventh value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Eighth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Ninth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Tenth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Eleventh value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Twelfth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Thirteenth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Foureenth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Fifteenth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-// Sixteenth value to be sorted
-mov pc asr; incpc
-mov pm ir; call @JTABLE
-
-sub LIST_END
-bnz @BUCKET_SORT_START
+//sub LIST_END
+//bnz @BUCKET_SORT_START
 
 
 
@@ -270,4 +241,5 @@ $INSERTION_END_BIGGEST
 mov ir pm
 
 $INSERTION_END_NOTBIGGEST
-mov hr ar; mov hr pc; ret
+mov hr ar; mov hr pc
+mov pc asr; incpc; ret
