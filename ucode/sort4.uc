@@ -69,44 +69,44 @@ mov pc asr; incpc
 
 //$BUCKET_SORT_START
 mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
 
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
-mov pm ir; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
+mov pm ir; incpc; call @JTABLE
 
 
 //sub LIST_END
 //bnz @BUCKET_SORT_START
 
-
+//call @BREAK
 
 
 // Merge
@@ -242,4 +242,4 @@ mov ir pm
 
 $INSERTION_END_NOTBIGGEST
 mov hr ar; mov hr pc
-mov pc asr; incpc; ret
+mov pc asr; ret
