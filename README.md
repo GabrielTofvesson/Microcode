@@ -419,3 +419,32 @@ Cons:
 * Only sorts one element per iteration
 
 Average cycle count: 1050
+
+
+### sort4.uc
+
+A fifth iteration of the common bucketsort algorithm. This one is, as its name
+implies, based on the *sort2* algorithm. It improves upon it by making heavy
+use of the `call` and `ret` instructions. I.e. by moving the entire bucketsort
+implementation to a subroutine, it effectively allows 16 calls to sort values
+per iteration of the outermost loop. This conversion to a subroutine is done at
+zero cost to performance, as it exploits the fact that a call to a jumptable-
+based hashing algorithm is made and rather than returning to the algorithm
+after the hashing has taken place, the hash-table simply jumps to the
+insertionsort immediately, after which a `ret` is used to return back to normal
+execution. This has the effect of reducing a bucketsort of a single value be
+two instructions to dereference the value to sort, during which a call to the
+subroutine is made and after sorting, it continues execution at the instruction
+immediately after the dereference.
+
+Pros:
+* Optimized K1 jump-table with inline bucketsort
+* Highly un-rollable bucketsort implementation
+* Highly efficient bus use (almost always saturated)
+* Dynamic bucket placement, allowing for very fast merge operations
+* Efficient use of general registers to reduce arithmetic operations requiring
+constant values
+
+Cons:
+* Maximum of 6 elements per bucket
+* 96 unused program-memory addresses (+1 per bucket)
