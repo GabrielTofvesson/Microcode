@@ -121,6 +121,7 @@ $MERGE
 // Load bucket size
 mov ar asr
 mov pm lc
+bls @MERGE_BOTTOM
 
 // Copy elements to list
 $MERGE_MOVE
