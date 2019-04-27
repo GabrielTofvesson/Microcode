@@ -66,106 +66,105 @@ reset grm
 const LIST_START
 mov ar pc
 
-
 $BUCKET_SORT_START
 
 // First value to be sorted
 mov pc asr; incpc
 mov pm ir; call @JTABLE
 
-mov pm pc; mov pm lc
-sub gr; incpc
-mov pc pm
-mov ar pc
-
-$FIRST_INSERTION
-mov pc asr; bls @FIRST_INSERTION_END_BIGGEST
-mov pm ar
-sub ir
-adn ir; brn @FIRST_INSERTION_BOTTOM
-
-mov ir pm; incpc
-
-$FIRST_INSERTION_SHIFT
-mov pc asr; bls @FIRST_INSERTION_END_NOTBIGGEST
-mov pm ir
-mov ar pm
-mov ir ar; declc; incpc; bra @FIRST_INSERTION_SHIFT
-
-$FIRST_INSERTION_BOTTOM
-declc; incpc; bra @FIRST_INSERTION
-
-$FIRST_INSERTION_END_BIGGEST
-mov ir pm
-
-$FIRST_INSERTION_END_NOTBIGGEST
-
-
-
 // Second value to be sorted
-mov hr pc
 mov pc asr; incpc
 mov pm ir; call @JTABLE
-mov pm pc; mov pm lc
-sub gr; incpc
-mov pc pm
-mov ar pc
 
-$SECOND_INSERTION
-mov pc asr; bls @SECOND_INSERTION_END_BIGGEST
-mov pm ar
-sub ir
-adn ir; brn @SECOND_INSERTION_BOTTOM
+// Third value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
 
-mov ir pm; incpc
+// Fourth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
 
-$SECOND_INSERTION_SHIFT
-mov pc asr; bls @SECOND_INSERTION_END_NOTBIGGEST
-mov pm ir
-mov ar pm
-mov ir ar; declc; incpc; bra @SECOND_INSERTION_SHIFT
+// Fifth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
 
-$SECOND_INSERTION_BOTTOM
-declc; incpc; bra @SECOND_INSERTION
+// Sixth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
 
-$SECOND_INSERTION_END_BIGGEST
-mov ir pm
+// Seventh value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
 
-$SECOND_INSERTION_END_NOTBIGGEST
-mov hr ar; mov hr pc
+// Eighth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
+
+// Ninth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
+
+// Tenth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
+
+// Eleventh value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
+
+// Twelfth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
+
+// Thirteenth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
+
+// Foureenth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
+
+// Fifteenth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
+
+// Sixteenth value to be sorted
+mov pc asr; incpc
+mov pm ir; call @JTABLE
+
 sub LIST_END
 bnz @BUCKET_SORT_START
 
-$BUCKET_SORT_END
 
+
+
+// Merge
 const BUCKET_SIZE
 mov ar hr
-const HIGHEST_BUCKET
-mov ar pc
 const LIST_START
+mov ar pc
+const HIGHEST_BUCKET
 
 
 $MERGE
-mov pc asr; incpc
+// Load bucket size
+mov ar asr
 mov pm lc
 
+// Copy elements to list
 $MERGE_MOVE
-mov pc asr; bls @MERGE_BOTTOM
-mov pm gr
+sub gr; bls @MERGE_BOTTOM
 mov ar asr
-add 1
-mov gr pm; declc; incpc; bra @MERGE_MOVE
+mov pm ir
+mov pc asr; incpc
+mov ir pm; declc; bra @MERGE_MOVE
 
+// Check if we just copied the last bucket
 $MERGE_BOTTOM
-mov ar gr
-mov pc ar
 and BUCKET_INDEX_TRACKER
-sub hr; brz @PROGRAM_END
-mov ar pc
-mov gr ar; bra @MERGE
+sub hr; bnz @MERGE
 
 
-$PROGRAM_END
 $BREAK
 halt
 
@@ -176,68 +175,99 @@ halt
 $JTABLE
 mov pc hr; bop
 
-
 // IR OP-field jump table
 $OT_0
 const 0x38
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_1
 const 0x30
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_2
 const 0x28
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_3
 const 0x20
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_4
 const 0x18
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_5
 const 0x10
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_6
 const 0x08
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_7
 const 0x00
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_8
 const 0x78
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_9
 const 0x70
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_A
 const 0x68
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_B
 const 0x60
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_C
 const 0x58
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_D
 const 0x50
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_E
 const 0x48
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
 
 $OT_F
 const 0x40
-mov ar asr; ret
+mov ar asr; bra @PREPARE_SORT
+
+
+
+
+$PREPARE_SORT
+mov pm pc; mov pm lc
+sub gr; incpc
+mov pc pm
+mov ar pc
+
+$INSERTION
+mov pc asr; bls @INSERTION_END_BIGGEST
+mov pm ar
+sub ir
+adn ir; brn @INSERTION_BOTTOM
+
+mov ir pm; incpc
+
+$INSERTION_SHIFT
+mov pc asr; bls @INSERTION_END_NOTBIGGEST
+mov pm ir
+mov ar pm
+mov ir ar; declc; incpc; bra @INSERTION_SHIFT
+
+$INSERTION_BOTTOM
+declc; incpc; bra @INSERTION
+
+$INSERTION_END_BIGGEST
+mov ir pm
+
+$INSERTION_END_NOTBIGGEST
+mov hr ar; mov hr pc; ret
