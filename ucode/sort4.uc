@@ -214,11 +214,12 @@ mov ar asr; bra @PREPARE_SORT
 
 
 
-
+// Actual bucketsort
 $PREPARE_SORT
-mov pm pc; mov pm lc
-sub gr; incpc
-mov pc pm
+mov pm pc; mov pm lc                    // Load bucket length
+sub gr; incpc                           // Increment bucket length
+mov pc pm                               // Store new length
+//mov ar asr; bls @INSERTION_END_BIGGEST
 mov ar pc
 
 $INSERTION
@@ -239,5 +240,5 @@ $INSERTION_END_BIGGEST
 mov ir pm
 
 $INSERTION_END_NOTBIGGEST
-mov hr ar; mov hr pc
+mov hr pc
 mov pc asr; ret
