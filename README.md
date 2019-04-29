@@ -19,7 +19,7 @@ Move value in *regA* to *regB*
 
 
 ### MVN {[reg] | [const]}
-Move the inverse of a value (from register or constant) into register **AR**.
+Move the inverse of a value (from register or constant) into register [**AR**](#ar).
 
 *This operation uses the bus*
 
@@ -27,13 +27,13 @@ Move the inverse of a value (from register or constant) into register **AR**.
 
 
 ### MVZ
-Set **AR** to zero.
+Set [**AR**](#ar) to zero.
 
 *Sets flags: Z, N*
 
 
 ### ADD {[reg] | [const]}
-Add value (from register or constant) to register **AR**.
+Add value (from register or constant) to register [**AR**](#ar).
 
 *This operation uses the bus*
 
@@ -43,7 +43,7 @@ Add value (from register or constant) to register **AR**.
 
 
 ### SUB {[reg] | [const]}
-Subtract value (from register or constant) from register **AR**.
+Subtract value (from register or constant) from register [**AR**](#ar) (see [*Registers*](#registers)).
 
 *This operation uses the bus*
 
@@ -77,7 +77,7 @@ Perform bitwise Or with given value (from register or constant) and register
 
 
 ### ADN {[reg] | [const]}
-Add value (from register or constant) to register **AR** without updating
+Add value (from register or constant) to register [**AR**](#ar) without updating
 flags.
 
 *This operation uses the bus*
@@ -86,7 +86,7 @@ flags.
 
 
 ### LSL
-Performs a logical shift left of **AR**.
+Performs a logical shift left of [**AR**](#ar).
 
 *This operation uses the bus*
 
@@ -96,8 +96,8 @@ Performs a logical shift left of **AR**.
 
 
 ### ISL
-Performs a logical shift left of **AR** and **HR** as if they were one 32-bit
-register where **AR** corresponds to the most-significant bits.
+Performs a logical shift left of [**AR**](#ar) and [**HR**](#hr) as if they were one 32-bit
+register where [**AR**](#ar) corresponds to the most-significant bits.
 
 *This operation uses the bus*
 
@@ -107,7 +107,7 @@ register where **AR** corresponds to the most-significant bits.
 
 
 ### ASR
-Performs an arithmetic shift right on **AR**.
+Performs an arithmetic shift right on [**AR**](#ar).
 
 *This operation uses the bus*
 
@@ -117,8 +117,8 @@ Performs an arithmetic shift right on **AR**.
 
 
 ### ISR
-Performs an arithmetic shift right of **AR** and **HR** as if they were one
-32-bit register where **AR** corresponds to the most-significant bits.
+Performs an arithmetic shift right of [**AR**](#ar) and [**HR**](#hr) as if they were one
+32-bit register where [**AR**](#ar) corresponds to the most-significant bits.
 
 *This operation uses the bus*
 
@@ -128,7 +128,7 @@ Performs an arithmetic shift right of **AR** and **HR** as if they were one
 
 
 ### LSR
-Performs a logical shift right of **AR**.
+Performs a logical shift right of [**AR**](#ar).
 
 *This operation uses the bus*
 
@@ -138,7 +138,7 @@ Performs a logical shift right of **AR**.
 
 
 ### ROL
-Performs an arithmetic rotate right on **AR**.
+Performs an arithmetic rotate right on [**AR**](#ar).
 
 *This operation uses the bus*
 
@@ -148,8 +148,8 @@ Performs an arithmetic rotate right on **AR**.
 
 
 ### IRL
-Performs an arithmetic shift left of **AR** and **HR** as if they were one
-32-bit register where **AR** corresponds to the most-significant bits.
+Performs an arithmetic shift left of [**AR**](#ar) and [**HR**](#hr) as if they were one
+32-bit register where [**AR**](#ar) corresponds to the most-significant bits.
 
 *This operation uses the bus*
 
@@ -163,7 +163,7 @@ Set **LC** to value of constant.
 
 
 ### CONST [const]
-Set **AR** to value of cosntant.
+Set [**AR**](#ar) to value of cosntant.
 
 *This operation cannot be parallelized*
 
@@ -194,35 +194,35 @@ Perform an unconditional branch to the address of the given label.
 
 
 ### BNZ [label]
-Branch to address of label if **Z-flag** is 0.
+Branch to address of label if [**Z-flag**](#z) is 0.
 
 
 ### BRZ [label]
-Branch to address of label if **Z-flag** is 1.
+Branch to address of label if [**Z-flag**](#z) is 1.
 
 
 ### BRN [label]
-Branch to address of label if **N-flag** is 1.
+Branch to address of label if [**N-flag**](#n) is 1.
 
 
 ### BRC [label]
-Branch to address of label if **C-flag** is 1.
+Branch to address of label if [**C-flag**](#c) is 1.
 
 
 ### BRO [label]
-Branch to address of label if **O-flag** is 1.
+Branch to address of label if [**O-flag**](#o) is 1.
 
 
 ### BLS [label]
-Branch to address of label if **L-flag** is 1.
+Branch to address of label if [**L-flag**](#l) is 1.
 
 
 ### BNC [label]
-Branch to address of label if **C-flag** is 0.
+Branch to address of label if [**C-flag**](#c) is 0.
 
 
 ### BNO [label]
-Branch to address of label if **O-flag** is 0.
+Branch to address of label if [**O-flag**](#o) is 0.
 
 
 ### BOP
@@ -288,25 +288,25 @@ greater than 127.
 
 ## Flags
 Flags - *aside from L* - are set based on ALU operations, so they depend on
-**AR** and the **BUS**. Henceforth, unless otherwise implied or stated, **AR**
-will refer to the state/value of **AR** *after* an ALU operation.
+**AR** and the **BUS**. Henceforth, unless otherwise implied or stated, [**AR**](#ar)
+will refer to the state/value of [**AR**](#ar) *after* an ALU operation.
 
 ### Z
-Set if **AR** == **0**
+Set if [**AR**](#ar) == **0**
 
 ### N
-Set if sign bit in **AR** is set.
+Set if sign bit in [**AR**](#ar) is set.
 
 ### O
-Set if sign of **AR** differs from signs of both **AR** and **BUS** *before*
+Set if sign of [**AR**](#ar) differs from signs of both [**AR**](#ar) and **BUS** *before*
 the arithmetic operation.
 
 ### C
-Set if **AR** is less than or equal to **AR** *before* the arithmetic
+Set if [**AR**](#ar) is less than or equal to [**AR**](#ar) *before* the arithmetic
 operation.
 
 ### L
-Set if **LC** == 0.
+Set if [**LC**](#lc) == 0.
 
 
 ## Registers
@@ -321,11 +321,11 @@ but is nonetheless directly readable via the bus.
 
 ### PM
 The program-memory pseudo-register allows you to read/write values from the
-currently accessed program memory address (see **ASR**).
+currently accessed program memory address (see [**ASR**](#asr)).
 
 ### ASR
 The address register; this register is used to specify which address of
-program-memory to be accessible via **PM**.
+program-memory to be accessible via [**PM**](#pm).
 
 **NOTE**: This register cannot be read.
 
@@ -337,7 +337,7 @@ storing ephemeral or intermediate values during a computation.
 The instruction register. This register offers extra functionality such as K1-
 and K2-table addressing via the OP and M bits respectively. The GRx and M bits
 can also be used to address a specific general register via the GR multiplexer
-(see **GR**).
+(see [**GR**](#gr)).
 
 ### GR
 This is a shorthand for accessing the general register currently made available
@@ -366,7 +366,7 @@ action to take for the register. The three ways of modifying it are as follows:
 `lcset [const]`
 
 **NOTE**: LC cannot be read and can only be written to as detailed above. The
-value in LC can, though, to some degree be inferred from the L-flag
+value in LC can, though, to some degree be inferred from the [**L-flag**](#l)
 (see [*Flags*](#flags)).
 
 ## Sorting algorithms
