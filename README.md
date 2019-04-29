@@ -388,7 +388,7 @@ in the value in PC populating the lowesr 8 bits and the rest being filled with
 ### uPC
 The microprogram counter; sometimes also referred to as **MyPC**. This register
 cannot directly be read. It can, though, be written to in a variety of ways.
-These have been specified as *branch* instructions (such as [`BRA`](#bra)), as
+These have been specified as *branch* instructions (such as [`BRA`](#bra-label)), as
 well as subroutine instructions (such as [`ret`](#ret)).
 
 **NOTE**: This register is not connected to the bus.
@@ -396,7 +396,7 @@ well as subroutine instructions (such as [`ret`](#ret)).
 ### uSP
 The microstack pointer; sometimes also referred to as **MySPC**. This register
 cannot be directly read or written to. To write to it, a call to a subroutine
-must be issued (using [`call [label]`](#call)). The only way to "read" this
+must be issued (using [`call [label]`](#call-label)). The only way to "read" this
 register is to issue a subroutine-return instruction ([`ret`](#ret)) which
 copies the value in this register to [**uPC**](#upc).
 
@@ -548,3 +548,5 @@ constant values
 Cons:
 * Maximum of 6 elements per bucket
 * 96 unused program-memory addresses (+1 per bucket)
+
+Average cycle count: 800
