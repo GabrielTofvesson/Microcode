@@ -328,7 +328,7 @@ but is nonetheless directly readable via the bus.
 
 ### PM
 The program-memory pseudo-register allows you to read/write values from the
-currently accessed program memory address (see [**ASR**](#asr)).
+currently accessed program memory address (see [**ASR**](#asr-1)).
 
 ### ASR
 The address register; this register is used to specify which address of
