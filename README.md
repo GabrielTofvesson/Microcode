@@ -309,6 +309,66 @@ operation.
 Set if **LC** == 0.
 
 
+## Registers
+Available registers for read/write operations are documented below. Unless
+otherwise specified, the registers are directly accessible via the bus for read
+and write operations.
+
+### AR
+The accumulator register. This register can only be written to as the result of
+an ALU operation. This is to say, that AR is indirectly writable via the ALU,
+but is nonetheless directly readable via the bus.
+
+### PM
+The program-memory pseudo-register allows you to read/write values from the
+currently accessed program memory address (see **ASR**).
+
+### ASR
+The address register; this register is used to specify which address of
+program-memory to be accessible via **PM**.
+
+**NOTE**: This register cannot be read.
+
+### HR
+The help register. This is a general-purpose register which is useful for
+storing ephemeral or intermediate values during a computation.
+
+### IR
+The instruction register. This register offers extra functionality such as K1-
+and K2-table addressing via the OP and M bits respectively. The GRx and M bits
+can also be used to address a specific general register via the GR multiplexer
+(see **GR**).
+
+### GR
+This is a shorthand for accessing the general register currently made available
+by the GR multiplexer when said MUX is controlled by the GRx bits in **IR**.
+
+**NOTE**: Only one GR can be accessed per cycle. Which register this is (of
+the four available registers) is determined by the value in **IR**.
+
+### GRM
+This is a shorthand for accessing the general register currently made available
+by the GR multiplexer when said MUX is controlled by the M bits in **IR**.
+
+**NOTE**: Only one GR can be accessed per cycle. Which register this is (of
+the four available registers) is determined by the value in **IR**.
+
+### LC
+The loopcounter register is a special register that can only be modified in
+three ways: all three ways are dictated by the L-field in the microprogram.
+Additionally, the counter can remain unchanged by simply not specifying an
+action to take for the register. The three ways of modifying it are as follows:
+
+* Decrement counter by one. The corresponding uASM instruction for this is
+`declc`
+* Load value from bus. The uASM instruction being `mov [reg] LC`
+* Load a 7-bit constant from micromemory. The uASM instruction for this is
+`lcset [const]`
+
+**NOTE**: LC cannot be read and can only be written to as detailed above. The
+value in LC can, though, to some degree be inferred from the L-flag
+(see [*Flags*](#flags)).
+
 ## Sorting algorithms
 For the sorting competition, we have chosen to focus on implementing bucketsort
 with an inline insertionsort when inserting values into corresponding buckets.
