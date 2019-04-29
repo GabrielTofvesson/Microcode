@@ -222,21 +222,18 @@ mov pc pm
 mov ar pc
 
 $INSERTION
-mov pc asr; bls @INSERTION_END_BIGGEST
+mov pc asr; incpc; declc; bls @INSERTION_END_BIGGEST
 mov pm ar
 sub ir
-adn ir; brn @INSERTION_BOTTOM
+adn ir; brn @INSERTION
 
-mov ir pm; incpc
+mov ir pm
 
 $INSERTION_SHIFT
-mov pc asr; bls @INSERTION_END_NOTBIGGEST
+mov pc asr
 mov pm ir
-mov ar pm
+mov ar pm; bls @INSERTION_END_NOTBIGGEST
 mov ir ar; declc; incpc; bra @INSERTION_SHIFT
-
-$INSERTION_BOTTOM
-declc; incpc; bra @INSERTION
 
 $INSERTION_END_BIGGEST
 mov ir pm
