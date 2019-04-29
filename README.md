@@ -7,7 +7,7 @@ microprogramming the LMIA system.
 ## μASM instruction set
 
 ### NOP
-No-operation. This wastes one clock cycle
+No-operation. This wastes one clock cycle.
 
 
 ### MOV [regA] \[regB\]
@@ -15,11 +15,13 @@ Move value in *regA* to *regB*
 
 *This operation uses the bus*
 
-*If regB is LC, no other LC operation can be specified in the same cycle*
+*If regB is [LC](#lc), no other [LC](#lc) operation can be specified in the
+same cycle*
 
 
 ### MVN {[reg] | [const]}
-Move the inverse of a value (from register or constant) into register [**AR**](#ar).
+Move the inverse of a value (from register or constant) into register
+[**AR**](#ar).
 
 *This operation uses the bus*
 
@@ -29,7 +31,7 @@ Move the inverse of a value (from register or constant) into register [**AR**](#
 ### MVZ
 Set [**AR**](#ar) to zero.
 
-*Sets flags: Z, N*
+*Sets flags: [Z](#z), [N](#n)*
 
 
 ### ADD {[reg] | [const]}
@@ -39,17 +41,17 @@ Add value (from register or constant) to register [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N, O, C*
+*Sets flags: [Z](#z), [N](#n), [O](#o), [C](#c)*
 
 
 ### SUB {[reg] | [const]}
-Subtract value (from register or constant) from register [**AR**](#ar) (see [*Registers*](#registers)).
+Subtract value (from register or constant) from register [**AR**](#ar).
 
 *This operation uses the bus*
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N, O, C*
+*Sets flags: [Z](#z), [N](#n), [O](#o), [C](#c)*
 
 
 ### AND {[reg] | [const]}
@@ -61,7 +63,7 @@ expect it to be removed in future releases.
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N*
+*Sets flags: [Z](#z), [N](#n)*
 
 
 ### ORR {[reg] | [const]}
@@ -72,13 +74,13 @@ Perform bitwise Or with given value (from register or constant) and register
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N*
+*Sets flags: [Z](#z), [N](#n)*
 
 
 
 ### ADN {[reg] | [const]}
-Add value (from register or constant) to register [**AR**](#ar) without updating
-flags.
+Add value (from register or constant) to register [**AR**](#ar) without
+updating flags.
 
 *This operation uses the bus*
 
@@ -92,18 +94,19 @@ Performs a logical shift left of [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N, C*
+*Sets flags: [Z](#z), [N](#n), [C](#c)*
 
 
 ### ISL
-Performs a logical shift left of [**AR**](#ar) and [**HR**](#hr) as if they were one 32-bit
-register where [**AR**](#ar) corresponds to the most-significant bits.
+Performs a logical shift left of [**AR**](#ar) and [**HR**](#hr) as if they
+were one 32-bit register where [**AR**](#ar) corresponds to the
+most-significant bits.
 
 *This operation uses the bus*
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N, C*
+*Sets flags: [Z](#z), [N](#n), [C](#c)*
 
 
 ### ASR
@@ -113,18 +116,19 @@ Performs an arithmetic shift right on [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N, C*
+*Sets flags: [Z](#z), [N](#n), [C](#c)*
 
 
 ### ISR
-Performs an arithmetic shift right of [**AR**](#ar) and [**HR**](#hr) as if they were one
-32-bit register where [**AR**](#ar) corresponds to the most-significant bits.
+Performs an arithmetic shift right of [**AR**](#ar) and [**HR**](#hr) as if
+they were one 32-bit register where [**AR**](#ar) corresponds to the
+most-significant bits.
 
 *This operation uses the bus*
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N, C*
+*Sets flags: [Z](#z), [N](#n), [C](#c)*
 
 
 ### LSR
@@ -134,7 +138,7 @@ Performs a logical shift right of [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N, C*
+*Sets flags: [Z](#z), [N](#n), [C](#c)*
 
 
 ### ROL
@@ -144,22 +148,23 @@ Performs an arithmetic rotate right on [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N, C*
+*Sets flags: [Z](#z), [N](#n), [C](#c)*
 
 
 ### IRL
-Performs an arithmetic shift left of [**AR**](#ar) and [**HR**](#hr) as if they were one
-32-bit register where [**AR**](#ar) corresponds to the most-significant bits.
+Performs an arithmetic shift left of [**AR**](#ar) and [**HR**](#hr) as if they
+were one 32-bit register where [**AR**](#ar) corresponds to the
+most-significant bits.
 
 *This operation uses the bus*
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: Z, N, C*
+*Sets flags: [Z](#z), [N](#n), [C](#c)*
 
 
 ### LCSET [const]
-Set **LC** to value of constant.
+Set [**LC**](#lc) to value of constant.
 
 
 ### CONST [const]
@@ -169,24 +174,24 @@ Set [**AR**](#ar) to value of cosntant.
 
 
 ### INCPC
-Increment value in **PC** by one.
+Increment value in [**PC**](#pc) by one.
 
 
 ### DECLC
-Decrement value in **LC** by one.
+Decrement value in [**LC**](#lc) by one.
 
 
 ### CALL [label]
-Move value in **uPC** to **uSP** (**MySPC**) and set value in **uPC** to point
+Move value in [**uPC**](#upc) to [**uSP**](#usp) and set value in [**uPC**](#upc) to point
 to the address of the given label.
 
 
 ### RET
-Move value in **uSP** (**MySPC**) into **uPC**.
+Move value in [**uSP**](#usp) into [**uPC**](#upc).
 
 
 ### HALT
-Stop execution and set value in **uPC** to 0.
+Stop execution and set value in [**uPC**](#upc) to 0.
 
 
 ### BRA [label]
@@ -227,16 +232,16 @@ Branch to address of label if [**O-flag**](#o) is 0.
 
 ### BOP
 Branch to address specified by entry in optable pointed to by highest 4 bits
-in IR.
+in [**IR**](#ir).
 
 
 ### BAM
 Branch to address specified by entry in addressing mode pointed to by M-bits in
-IR.
+[**IR**](#ir).
 
 
 ### BST
-Branch to start. This sets value in **uPC** to 0.
+Branch to start. This sets value in [**uPC**](#upc) to 0.
 
 
 ### RESET [reg]
@@ -263,10 +268,10 @@ Define an initial value in the program memory at the given address.
 Define a compile-time label at the given position in the microprogram. Labels
 can be referenced using an '@' symbol.
 
-For example: *$BAR* would declare a label *BAR* which can be referenced with
-*@BAR*.
+For example: `$BAR` would declare a label *BAR* which can be referenced with
+`@BAR`.
 
-**NOTE**: Label names are case-insensitive; i.e. @*FOO* and @*foo* are
+**NOTE**: Label names are case-insensitive; i.e. `@FOO` and `@foo` are
 functionally indistinguishable to the compiler.
 
 
@@ -287,23 +292,25 @@ greater than 127.
 
 
 ## Flags
-Flags - *aside from L* - are set based on ALU operations, so they depend on
-**AR** and the **BUS**. Henceforth, unless otherwise implied or stated, [**AR**](#ar)
-will refer to the state/value of [**AR**](#ar) *after* an ALU operation.
+Flags - *aside from [L](#l)* - are set based on ALU operations, so they depend
+on [**AR*](#ar)* and the **BUS**. Henceforth, unless otherwise implied or
+stated, [**AR**](#ar) will refer to the state/value of [**AR**](#ar) *after* an
+ALU operation. Flags retain their state until an instruction which is declared
+as modifying said flag is executed.
 
 ### Z
-Set if [**AR**](#ar) == **0**
+Set if [**AR**](#ar) == **0**.
 
 ### N
 Set if sign bit in [**AR**](#ar) is set.
 
 ### O
-Set if sign of [**AR**](#ar) differs from signs of both [**AR**](#ar) and **BUS** *before*
-the arithmetic operation.
+Set if sign of [**AR**](#ar) differs from signs of both [**AR**](#ar) *before*
+the arithmetic operation and of the **BUS**.
 
 ### C
-Set if [**AR**](#ar) is less than or equal to [**AR**](#ar) *before* the arithmetic
-operation.
+Set if [**AR**](#ar) is less than or equal to [**AR**](#ar) *before* the
+arithmetic operation.
 
 ### L
 Set if [**LC**](#lc) == 0.
@@ -341,17 +348,19 @@ can also be used to address a specific general register via the GR multiplexer
 
 ### GR
 This is a shorthand for accessing the general register currently made available
-by the GR multiplexer when said MUX is controlled by the GRx bits in **IR**.
+by the GR multiplexer when said MUX is controlled by the GRx bits in
+[**IR**](#ir).
 
 **NOTE**: Only one GR can be accessed per cycle. Which register this is (of
-the four available registers) is determined by the value in **IR**.
+the four available registers) is determined by the value in [**IR**](#ir).
 
 ### GRM
 This is a shorthand for accessing the general register currently made available
-by the GR multiplexer when said MUX is controlled by the M bits in **IR**.
+by the GR multiplexer when said MUX is controlled by the M bits in
+[**IR**](#ir).
 
 **NOTE**: Only one GR can be accessed per cycle. Which register this is (of
-the four available registers) is determined by the value in **IR**.
+the four available registers) is determined by the value in [**IR**](#ir).
 
 ### LC
 The loopcounter register is a special register that can only be modified in
@@ -368,6 +377,37 @@ action to take for the register. The three ways of modifying it are as follows:
 **NOTE**: LC cannot be read and can only be written to as detailed above. The
 value in LC can, though, to some degree be inferred from the [**L-flag**](#l)
 (see [*Flags*](#flags)).
+
+### PC
+The program counter. This register is only 8 bits wide. Writing a value larger
+than 8 bits to this register will simply truncate the binary string to 8 bits.
+Attemping to read a value from PC to a register of a larger width will result
+in the value in PC populating the lowesr 8 bits and the rest being filled with
+0's.
+
+### uPC
+The microprogram counter; sometimes also referred to as **MyPC**. This register
+cannot directly be read. It can, though, be written to in a variety of ways.
+These have been specified as *branch* instructions (such as [`BRA`](#bra)), as
+well as subroutine instructions (such as [`ret`](#ret)).
+
+**NOTE**: This register is not connected to the bus.
+
+### uSP
+The microstack pointer; sometimes also referred to as **MySPC**. This register
+cannot be directly read or written to. To write to it, a call to a subroutine
+must be issued (using [`call [label]`](#call)). The only way to "read" this
+register is to issue a subroutine-return instruction ([`ret`](#ret)) which
+copies the value in this register to [**uPC**](#upc).
+
+**NOTE**: This register is not connected to the bus. The value in this register
+cannot be directly acted upon insofar as it cannot be directly read or copied
+to any other register than [**uPC**](#upc), meaning that the actual value in
+this register (and consequently in [**uPC**](#upc) aswell) cannot be directly
+accessed or transformed. I.e. the value in this register cannot be copied to,
+for example, a general register and thus, its value can only be inferred, not
+directly measured.
+
 
 ## Sorting algorithms
 For the sorting competition, we have chosen to focus on implementing bucketsort
