@@ -67,7 +67,7 @@ const LIST_START
 mov ar pc
 mov pc asr; incpc
 
-//$BUCKET_SORT_START
+// Perform bucketsort for 32 elements
 mov pm ir; call @JTABLE
 mov pm ir; incpc; call @JTABLE
 mov pm ir; incpc; call @JTABLE
@@ -103,13 +103,10 @@ mov pm ir; incpc; call @JTABLE
 mov pm ir; incpc; call @JTABLE
 
 
-//sub LIST_END
-//bnz @BUCKET_SORT_START
-
 //call @BREAK
 
 
-// Merge
+// Initialize state for merge
 const BUCKET_SIZE
 mov ar hr
 const LIST_START
@@ -117,26 +114,32 @@ mov ar pc
 const HIGHEST_BUCKET
 
 
+// Do the merge thing
 $MERGE
-// Load bucket size
+
+// Load bucket size into LC
 mov ar asr
 mov pm lc
-bls @MERGE_BOTTOM
 
 // Copy elements to list
 $MERGE_MOVE
-sub gr; bls @MERGE_BOTTOM
+sub gr; declc; bls @MERGE_BOTTOM    // AR -= -1, branch if there are no more
+                                    // elements to copy
 mov ar asr
 mov pm ir
-mov pc asr; incpc
-mov ir pm; declc; bra @MERGE_MOVE
+mov pc asr; incpc; bls @MB_SPEC     // This branch improves stability
+mov ir pm; bra @MERGE_MOVE          // Transfer value and copy more elements
+
+$MB_SPEC
+mov ir pm                           // Transfer value and go to next bucket
 
 // Check if we just copied the last bucket
 $MERGE_BOTTOM
-and BUCKET_INDEX_TRACKER
-sub hr; bnz @MERGE
+and BUCKET_INDEX_TRACKER            // Mask out element index (lowest 3 bits)
+sub hr; bnz @MERGE                  // Compute index of next bucket and stuff
 
 
+// Breakpoint hook and program termination point
 $BREAK
 halt
 
@@ -218,16 +221,17 @@ mov ar asr; bra @PREPARE_SORT
 $PREPARE_SORT
 mov pm pc; mov pm lc                    // Load bucket length
 sub gr; incpc                           // Increment bucket length
-mov pc pm                               // Store new length
-//mov ar asr; bls @INSERTION_END_BIGGEST
-mov ar pc
+mov pc pm; bls @IE_SPEC                 // Store new length
+
+mov ar pc; sub ar
+sub ir
 
 $INSERTION
 mov pc asr; incpc; declc; bls @INSERTION_END_BIGGEST
-mov pm ar
-sub ir
-adn ir; brn @INSERTION
+add pm
+sub pm; brn @INSERTION
 
+mov pm ar
 mov ir pm
 
 $INSERTION_SHIFT
@@ -235,6 +239,9 @@ mov pc asr
 mov pm ir
 mov ar pm; bls @INSERTION_END_NOTBIGGEST
 mov ir ar; declc; incpc; bra @INSERTION_SHIFT
+
+$IE_SPEC
+mov ar asr
 
 $INSERTION_END_BIGGEST
 mov ir pm
