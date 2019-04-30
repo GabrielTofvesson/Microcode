@@ -549,4 +549,4 @@ Cons:
 * Maximum of 6 elements per bucket
 * 96 unused program-memory addresses (+1 per bucket)
 
-Average cycle count: 800
+Average cycle count: 758
