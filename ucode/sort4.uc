@@ -99,7 +99,7 @@ mov pm ir; incpc; call @JTABLE
 mov pm ir; incpc; call @JTABLE
 mov pm ir; incpc; call @JTABLE
 mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
+mov pm ir; call @JTABLE_SPEC
 
 
 //call @BREAK
@@ -108,8 +108,6 @@ mov pm ir; incpc; call @JTABLE
 // Initialize state for merge
 const BUCKET_SIZE
 mov ar hr
-const LIST_START
-mov ar pc
 const HIGHEST_BUCKET
 
 
@@ -148,6 +146,10 @@ halt
 // Jump-table subroutine
 $JTABLE
 mov pc hr; bop
+
+$JTABLE_SPEC
+const LIST_START
+mov ar hr; bop
 
 // IR OP-field jump table
 $OT_0
