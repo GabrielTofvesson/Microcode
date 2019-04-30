@@ -6,6 +6,20 @@
 // of a tall building here: reading the code below WILL negatively impact your
 // life. You have been warned.
 
+// For clarity's sake, I thought I'd add a small preface here:
+// We use the optable as a replacement for a hashing algorithm. Check the
+// #optable directives if you're wondering what bucket the 4 highest bits of a
+// value end up pointing to. Each entry in the optable simply loads the
+// address of the corresponding bucket and initiates an insertion sort for said 
+// bucket.
+// Labels ending in "_SPEC" are edge-case optimization labels. They are
+// branched to in the case of special edge cases with the idea being that they
+// are much faster than following the reguar code-path (even if said path would
+// ultimately perform the same action).
+// For example, "call @JTABLE_SPEC" invokes a special jumptable subroutine
+// which parallelizes some of the boilerplate needed for the upcoming merge.
+
+
 #define LIST_START 0xE0
 #define LIST_END 0x00
 #define HIGHEST_BUCKET 0x78
