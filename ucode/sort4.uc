@@ -53,12 +53,11 @@
 
 // Set all GR-registers to -1, so that we always can call "sub gr" to increment
 // AR, no matter what value we have in IR ;)
-const 0x100
-mov ar ir
-reset gr
-reset grm
-const 0xB00
-mov ar ir
+const 0xB00         // GRx=10, M=11
+lsr; mov ar ir
+lsr; reset gr
+lsr; reset grm
+mov ar ir           // GRx=00, M=01
 reset gr
 reset grm
 
