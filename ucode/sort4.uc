@@ -224,21 +224,26 @@ sub gr; incpc                           // Increment bucket length
 mov pc pm; bls @IE_SPEC                 // Store new length
 
 mov ar pc; sub ar
-sub ir
+sub ir // Save -IR into AR (you'll see why)
+
 
 $INSERTION
 mov pc asr; incpc; declc; bls @INSERTION_END_BIGGEST
-add pm
+add pm                  // Effectively, AR=PM-IR, except more like AR=-IR+PM
 sub pm; brn @INSERTION
 
 mov pm ar
-mov ir pm
+mov ir pm; bls @IEN_SPEC
 
 $INSERTION_SHIFT
 mov pc asr
 mov pm ir
 mov ar pm; bls @INSERTION_END_NOTBIGGEST
 mov ir ar; declc; incpc; bra @INSERTION_SHIFT
+
+$IEN_SPEC
+mov pc asr
+mov ar pm; bra @INSERTION_END_NOTBIGGEST
 
 $IE_SPEC
 mov ar asr
