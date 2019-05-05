@@ -464,7 +464,7 @@ fun main(args: Array<String>){
 
             // Define addressing mode (k2) entry
             if(actualCode.startsWith("#amode ")){
-                // Parse K2 declarationa
+                // Parse K2 declarations
                 val substr = actualCode.substring(7)
                 if(substr.indexOf(" ") == -1) throw RuntimeException("Bad amode declaration: $actualCode")
 
@@ -477,6 +477,61 @@ fun main(args: Array<String>){
                         else AddressReference.makeReference(readNumber(constant, 127))
                 }catch(e: NumberFormatException){
                     throw RuntimeException("Unknown number format for amode declaration: $actualCode")
+                }
+                continue
+            }
+
+            if(actualCode.startsWith("#pmgen ")){
+                val code = actualCode.substring("#pmgen ".length)
+
+                val proc = ProcessBuilder("python", "-c", "for address in range(0, 128):\n\t$code")
+                    .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                    .redirectError(ProcessBuilder.Redirect.PIPE)
+                    .start()
+
+                // Await termination of pm generator
+                proc.waitFor()
+
+                val eStream = proc.errorStream
+                val oStream = proc.inputStream
+
+                if(eStream.available() > 0){
+                    val bytes = ByteArray(eStream.available())
+                    eStream.read(bytes, 0, bytes.size)
+                    throw RuntimeException("An error ocurred when running PM-generation script:\n\t${String(bytes)}")
+                }
+
+                val bytes = ByteArray(oStream.available())
+                oStream.read(bytes, 0, bytes.size)
+
+                val outStrings = String(bytes).split("\n")
+
+                for(directive in outStrings){
+                    if(directive.length == 0) continue
+                    val split = directive.split(" ")
+                    if(split.size != 2)
+                        throw RuntimeException("Unknown PM mapping: $directive")
+
+                    val address: Int
+                    val value: Int
+                    try{
+                        address = split[0].toInt()
+                        if(address < 0 || address > 255)
+                            throw RuntimeException("Could not parse address: $directive")
+                    }catch(e: NumberFormatException){
+                        throw RuntimeException("Could not parse address: $directive")
+                    }
+                    
+                    try{
+                        value = split[1].toInt()
+                        if(value < -32768 || address > 65535)
+                            throw RuntimeException("Could not parse value: $directive")
+                    }catch(e: NumberFormatException){
+                        throw RuntimeException("Could not parse value: $directive")
+                    }
+
+                    // TODO: Fix this. This works, but it's absolutely terrible
+                    println("@0x${address.toString(16)}\n${value.and(0xFFFF).or(1 shl 30).toString(16).substring(4)}")
                 }
                 continue
             }
