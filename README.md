@@ -291,6 +291,45 @@ a constant being supplied as the value, this value my not be negative nor be
 greater than 127.
 
 
+### \#pmgen [python]
+Define a script to be run for each address in program memory. This can be used
+to generate program memory value mappings more efficiently than manually
+defining values. The script is run in a for-loop with the index variable
+`address`. I.e. the variable `address` can be used in the specified script to
+refer to the current program memory address. To emit a value, simply print a
+string in the format "\[address] [value]" where the value can be in the range
+-32768 to 65535 (inclusive).
+
+
+### \#emit
+Define a script to emit uASM code at compile-time. Each following line preceded
+by a `>` will be included in the script; the first line not preceded by `>`
+(or EOF) will define the end of the script. To emit code, simply print the code
+that should be emitted.
+
+Example:
+
+```
+mov ar asr
+#emit
+>for i in range(4):
+>  print("lsl; mov ar ir")
+>  print("add pm")
+sub gr
+```
+
+the above code will be converted in the the following code by the preprocessor:
+
+```
+mov ar asr
+lsl; mov ar ir
+lsl; mov ar ir
+lsl; mov ar ir
+lsl; mov ar ir
+sub gr
+```
+
+
 ## Flags
 Flags - *aside from [L](#l)* - are set based on ALU operations, so they depend
 on [**AR*](#ar)* and the **BUS**. Henceforth, unless otherwise implied or
