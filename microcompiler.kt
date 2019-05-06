@@ -398,8 +398,50 @@ fun main(args: Array<String>){
     val k1 = HashMap<Int, AddressReference>()
     val k2 = HashMap<Int, AddressReference>()
 
+    var emitting = false
+    val emitter = ArrayList<String>()
+
+    val rawData = file.readText().replace("\r", "").split("\n")
+    val pregen = StringBuilder()
+
+    fun emitCode(){
+          val emission = StringBuilder()
+          for(line in emitter)
+              emission.append(line).append("\n")
+          
+          val (output, error) = emission.toString().runPython()
+          if(error.length > 0)
+              throw RuntimeException("Error when attemping to emit code:\n    ${error.replace("\n", "\n    ")}")
+
+          pregen.append(output)
+
+          emitter.clear()
+
+    }
+
+    // Process code emission first
+    for(line in rawData){
+        if(line == "#emit") emitting = true
+        else{
+            if(emitting){
+                if(line.startsWith(">")){
+                    emitter.add(line.substring(1))
+                    continue
+                }
+                else{
+                    emitCode()
+                    emitting = false
+                }
+            }
+
+            pregen.append(line).append("\n")
+        }
+    }
+
+    if(emitter.size > 0) emitCode()
+
     println("@p")
-    for(line in file.readText().replace("\r", "").split("\n")){
+    for(line in pregen.toString().replace("\r", "").split("\n")){
         ++lineCount
         try{
             val actualCode = (if(line.indexOf("//") != -1) line.substring(0, line.indexOf("//")) else line).toLowerCase()
@@ -484,27 +526,12 @@ fun main(args: Array<String>){
             if(actualCode.startsWith("#pmgen ")){
                 val code = actualCode.substring("#pmgen ".length)
 
-                val proc = ProcessBuilder("python", "-c", "for address in range(0, 128):\n\t$code")
-                    .redirectOutput(ProcessBuilder.Redirect.PIPE)
-                    .redirectError(ProcessBuilder.Redirect.PIPE)
-                    .start()
+                val (output, error) = "for address in range(0, 256):\n\t$code".runPython()
+                
+                if(error.length > 0)
+                    throw RuntimeException("An error ocurred when running PM-generation script:\n    ${error.replace("\n", "\n    ")}")
 
-                // Await termination of pm generator
-                proc.waitFor()
-
-                val eStream = proc.errorStream
-                val oStream = proc.inputStream
-
-                if(eStream.available() > 0){
-                    val bytes = ByteArray(eStream.available())
-                    eStream.read(bytes, 0, bytes.size)
-                    throw RuntimeException("An error ocurred when running PM-generation script:\n\t${String(bytes)}")
-                }
-
-                val bytes = ByteArray(oStream.available())
-                oStream.read(bytes, 0, bytes.size)
-
-                val outStrings = String(bytes).split("\n")
+                val outStrings = output.split("\n")
 
                 for(directive in outStrings){
                     if(directive.length == 0) continue
@@ -573,4 +600,21 @@ fun main(args: Array<String>){
 fun Int.toPaddedHexString(len: Int): String {
     val str = toString(16)
     return if(str.length >= len) str else ("0".repeat(len - str.length) + str)
+}
+
+fun String.runPython(): Pair<String, String> {
+     val proc = ProcessBuilder("python", "-c", "$this")
+                    .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                    .redirectError(ProcessBuilder.Redirect.PIPE)
+                    .start()
+
+    // Await termination of pm generator
+    proc.waitFor()
+    return proc.inputStream.readString() to proc.errorStream.readString()
+}
+
+fun java.io.InputStream.readString(): String {
+    val bytes = ByteArray(available())
+    read(bytes, 0, bytes.size)
+    return String(bytes)
 }
