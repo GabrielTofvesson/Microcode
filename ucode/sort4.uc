@@ -22,8 +22,8 @@
 
 #define LIST_START 0xE0
 #define LIST_END 0x00
-#define HIGHEST_BUCKET 0x78
-#define BUCKET_SIZE 8
+#define HIGHEST_BUCKET 0xD2
+#define BUCKET_SIZE 14
 #define BUCKET_INDEX_TRACKER 0b11111000
 
 #optable 0x0 @OT_0
@@ -43,26 +43,11 @@
 #optable 0xe @OT_E
 #optable 0xf @OT_F
 
-// Set up buckets (with absolute sizes)
-// Bucket count: 16
-// Bucket size: 8
-// Motivation: direct mapping from hash to bucket at the cost of bucket size
-#data 0x00 0x00 // 0 (POSITIVE)
-#data 0x08 0x00 // 1 (POSITIVE)
-#data 0x10 0x00 // 2 (POSITIVE)
-#data 0x18 0x00 // 3 (POSITIVE)
-#data 0x20 0x00 // 4 (POSITIVE)
-#data 0x28 0x00 // 5 (POSITIVE)
-#data 0x30 0x00 // 6 (POSITIVE)
-#data 0x38 0x00 // 7 (POSITIVE)
-#data 0x40 0x00 // 8 (NEGATIVE)
-#data 0x48 0x00 // 9 (NEGATIVE)
-#data 0x50 0x00 // A (NEGATIVE)
-#data 0x58 0x00 // B (NEGATIVE)
-#data 0x60 0x00 // C (NEGATIVE)
-#data 0x68 0x00 // D (NEGATIVE)
-#data 0x70 0x00 // E (NEGATIVE)
-#data 0x78 0x00 // F (NEGATIVE)
+// Generate program memory:
+//      Addresses 0xE0-0xFF ignored
+//      Addresses that are a multiple of 0xE are set to 0
+//      All other addresses contain a relative pointer to the next bucket start
+#pmgen if address < 0xE0: print(str(address)+" "+str(0 if (address % 14) == 0 else ((address - (address % 0xE)) - 0xE) if address > 0xD else -1))
 
 
 // Set all GR-registers to -1, so that we always can call "sub gr" to increment
@@ -75,83 +60,53 @@ mov ar ir           // GRx=00, M=01
 reset gr
 reset grm
 
+
 // Initialize PC to point at list
 const LIST_START
 mov ar pc
-mov pc asr; incpc
+mov pc asr
 
 // Perform bucketsort for 32 elements
-mov pm ir; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
-mov pm ir; incpc; call @JTABLE
+#emit
+>for i in range(31):
+>  print("mov pm ir; incpc; call @JTABLE")
 mov pm ir; call @JTABLE_SPEC
 
 
-//call @BREAK
-
-
 // Initialize state for merge
-const BUCKET_SIZE
-mov ar hr
 const HIGHEST_BUCKET
-
+mov ar asr
+mov pm lc
+sub gr
 
 // Do the merge thing
 $MERGE
-
-// Load bucket size into LC
-mov ar asr
-mov pm lc
+mov ar asr; declc; bls @MB_SPEC
+mov pm ir
+mov pc asr
+mov ir pm; incpc
+sub gr
 
 // Copy elements to list
 $MERGE_MOVE
-sub gr; declc; bls @MERGE_BOTTOM    // AR -= -1, branch if there are no more
-                                    // elements to copy
-mov ar asr
+mov ar asr; declc; bls @MB_SPEC
 mov pm ir
-mov pc asr; incpc; bls @MB_SPEC     // This branch improves stability
-mov ir pm; bra @MERGE_MOVE          // Transfer value and copy more elements
+mov pc asr                      // This branch improves stability
+mov ir pm; incpc; bls @MERGE_BOTTOM  // Transfer value and copy more elements
+sub gr; bra @MERGE_MOVE
+
+$MERGE_BOTTOM
+sub gr
+mov ar asr
 
 $MB_SPEC
-mov ir pm                           // Transfer value and go to next bucket
-
-// Check if we just copied the last bucket
-$MERGE_BOTTOM
-and BUCKET_INDEX_TRACKER            // Mask out element index (lowest 3 bits)
-sub hr; bnz @MERGE                  // Compute index of next bucket and stuff
-
+mov pm ar; mov pm asr
+sub gr
+mov pm lc; bnz @MERGE
 
 // Breakpoint hook and program termination point
 $BREAK
+$END
 halt
 
 
@@ -165,71 +120,17 @@ $JTABLE_SPEC
 const LIST_START
 mov ar hr; bop
 
-// IR OP-field jump table
-$OT_0
-const 0x38
-mov ar asr; bra @PREPARE_SORT
 
-$OT_1
-const 0x30
-mov ar asr; bra @PREPARE_SORT
-
-$OT_2
-const 0x28
-mov ar asr; bra @PREPARE_SORT
-
-$OT_3
-const 0x20
-mov ar asr; bra @PREPARE_SORT
-
-$OT_4
-const 0x18
-mov ar asr; bra @PREPARE_SORT
-
-$OT_5
-const 0x10
-mov ar asr; bra @PREPARE_SORT
-
-$OT_6
-const 0x08
-mov ar asr; bra @PREPARE_SORT
-
-$OT_7
-const 0x00
-mov ar asr; bra @PREPARE_SORT
-
-$OT_8
-const 0x78
-mov ar asr; bra @PREPARE_SORT
-
-$OT_9
-const 0x70
-mov ar asr; bra @PREPARE_SORT
-
-$OT_A
-const 0x68
-mov ar asr; bra @PREPARE_SORT
-
-$OT_B
-const 0x60
-mov ar asr; bra @PREPARE_SORT
-
-$OT_C
-const 0x58
-mov ar asr; bra @PREPARE_SORT
-
-$OT_D
-const 0x50
-mov ar asr; bra @PREPARE_SORT
-
-$OT_E
-const 0x48
-mov ar asr; bra @PREPARE_SORT
-
-$OT_F
-const 0x40
-mov ar asr; bra @PREPARE_SORT
-
+// Generate jump table
+#emit
+>bucket_size=14
+>for i in range(16):
+>  print("$OT_"+hex(i)[2::])
+>  if i < 8:
+>    print("const "+str(bucket_size*(7-i)))
+>  else:
+>    print("const "+str(bucket_size*(23-i)))
+>  print("mov ar asr; bra @PREPARE_SORT")
 
 
 // Actual bucketsort
