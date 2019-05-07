@@ -21,27 +21,11 @@
 
 
 #define LIST_START 0xE0
-#define LIST_END 0x00
 #define HIGHEST_BUCKET 0xD2
-#define BUCKET_SIZE 14
-#define BUCKET_INDEX_TRACKER 0b11111000
 
-#optable 0x0 @OT_0
-#optable 0x1 @OT_1
-#optable 0x2 @OT_2
-#optable 0x3 @OT_3
-#optable 0x4 @OT_4
-#optable 0x5 @OT_5
-#optable 0x6 @OT_6
-#optable 0x7 @OT_7
-#optable 0x8 @OT_8
-#optable 0x9 @OT_9
-#optable 0xa @OT_A
-#optable 0xb @OT_B
-#optable 0xc @OT_C
-#optable 0xd @OT_D
-#optable 0xe @OT_E
-#optable 0xf @OT_F
+// Generate jump-table ;)
+#emit
+>for i in range(16): print("#optable "+hex(i)+" @OT_"+hex(i)[2::])
 
 // Generate program memory:
 //      Addresses 0xE0-0xFF ignored
@@ -79,21 +63,13 @@ mov ar asr
 mov pm lc
 sub gr
 
-// Do the merge thing
-$MERGE
-mov ar asr; declc; bls @MB_SPEC
-mov pm ir
-mov pc asr
-mov ir pm; incpc
-sub gr
-
 // Copy elements to list
-$MERGE_MOVE
+$MERGE
 mov ar asr; declc; bls @MB_SPEC
 mov pm ir
 mov pc asr                      // This branch improves stability
 mov ir pm; incpc; bls @MERGE_BOTTOM  // Transfer value and copy more elements
-sub gr; bra @MERGE_MOVE
+sub gr; bra @MERGE
 
 $MERGE_BOTTOM
 sub gr
