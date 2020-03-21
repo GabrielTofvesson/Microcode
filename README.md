@@ -12,6 +12,7 @@ More interesting information can be found in the README files of the other branc
 # Requirements
 To compile and run the microcompiler and one of the ASM compilers in the other branches, you will need Kotlin.
 Python is also required for one of the ASM compilers and for the microcode preprocessor.
+To run the emulator, an X11 environment must be set up, along with `libxm4` (available as an `apt` pkg for `i386`).
 
 # Branches
 
@@ -23,7 +24,7 @@ Python is also required for one of the ASM compilers and for the microcode prepr
 
 
 # Running
-To run the microcode, simply run `./lmia` and make sure you have a proper libXm.so (like the one in this repo) installed.
+To run the microcode, simply run `./lmia`
 
 # Note
-Most rights reserved, as `lmia` and `libXm.so` are simply included in the repo, but are by no means owned or developed by neither me nor my lab partner
+Most rights reserved, as `lmia` and `libXm.so` are simply included in the repo, but are by no means owned or developed by neither me nor my lab partner. These aforementioned files may come to be removed from the repository
