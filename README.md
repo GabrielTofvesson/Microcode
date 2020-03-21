@@ -20,3 +20,10 @@ Python is also required for one of the ASM compilers and for the microcode prepr
 * `dev`: The interesting branch. We include two ASM compilers and a microcode compiler, along with our own microprogramming language
 
 * `hdl`: A small modification to the `dev` branch adding support for the generation of Verilog instead of microcode
+
+
+# Running
+To run the microcode, simply run `./lmia` and make sure you have a proper libXm.so (like the one in this repo) installed.
+
+# Note
+Most rights reserved, as `lmia` and `libXm.so` are simply included in the repo, but are by no means owned or developed by neither me nor my lab partner
