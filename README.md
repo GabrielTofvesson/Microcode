@@ -231,13 +231,13 @@ Branch to address of label if [**O-flag**](#o) is **0**.
 
 
 ### BOP
-Branch to address specified by entry in optable pointed to by highest **4** bits
+Branch to address specified by entry in optable pointed to by highest [**OP**](#op)
 in [**IR**](#ir).
 
 
 ### BAM
-Branch to address specified by entry in addressing mode pointed to by M-bits in
-[**IR**](#ir).
+Branch to address specified by entry in addressing mode pointed to by [**M**](#m)
+in [**IR**](#ir).
 
 
 ### BST
@@ -366,7 +366,7 @@ and write operations.
 
 ### AR
 The accumulator register. This register can only be written to as the result of
-an ALU operation. This is to say, that AR is indirectly writable via the ALU,
+an ALU operation. This is to say, that **AR** is indirectly writable via the ALU,
 but is nonetheless directly readable via the bus.
 
 ### PM
@@ -385,24 +385,34 @@ storing ephemeral or intermediate values during a computation.
 
 ### IR
 The instruction register. This register offers extra functionality such as
-**K1**- and **K2**-table addressing via the **OP** and **M** bits respectively.
-The **GRx** and **M** bits can also be used to address a specific general
-register via the **GR** multiplexer (see [**GR**](#gr)).
+**K1**- and **K2**-table addressing via the [**OP**](#op) and [**M**](#m)
+bits respectively. The [**GRx**](#grx) and [**M**](#m) bits can also be used
+to address a specific general register via the [**GR**](#gr) multiplexer.
 
-The bit-level layout of IR (from MSB to LSB) is as follows:
+Bit-level layout of IR (from MSB to LSB, left-to-right):
 
-* **OP** : 4 bits (machine instruction). Can be used to jump to a
-microinstruction address given by **K1** at the index specified by **OP**
+| **OP** | **GRx** | **M**  | **ADR** |
+|:------:|:-------:|:------:|:-------:|
+| 4 bits | 2 bits  | 2 bits | 8 bits  |
 
-* **GRx**: 2 bits (GR multiplexer selector)
 
-* **M**  : 2 bits (Addressing mode)
+##### OP
+Machine instruction. Indexes **K1**-table.
 
-* **ADR**: 8 bits (ASR address argument)
+##### GRx
+[**GR**](#gr) multiplexer selector.
+
+##### M
+Addressing mode. Indexes **K2**-table.
+
+##### ADR
+[**ASR**](#asr-1) address argument.
+
+
 
 ### GR
 This is a shorthand for accessing the general register currently made available
-by the GR multiplexer when said MUX is controlled by the **GRx** bits in
+by the GR multiplexer when said MUX is controlled by the [**GRx**](#grx) bits in
 [**IR**](#ir).
 
 **NOTE**: Only one GR can be accessed per cycle. Which register this is (of
@@ -410,7 +420,7 @@ the four available registers) is determined by the value in [**IR**](#ir).
 
 ### GRM
 This is a shorthand for accessing the general register currently made available
-by the GR multiplexer when said MUX is controlled by the **M** bits in
+by the GR multiplexer when said MUX is controlled by the [**M**](#m) bits in
 [**IR**](#ir).
 
 **NOTE**: Only one GR can be accessed per cycle. Which register this is (of
