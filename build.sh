@@ -55,7 +55,12 @@ case $# in
     3)
         if [ "$2" = "asm" ] || [ "$2" = "micro" ]; then
             TYPE=$2
-            OUTPUT=$3
+            if [ "$3" = "-v" ]; then
+                VERILOG=$3
+                OUTPUT="build.mia"
+            else
+                OUTPUT=$3
+            fi
         else
             TYPE="asm"
             OUTPUT=$2
@@ -107,12 +112,12 @@ if [ "$COMBINE" = "" ]; then
         kotlin -classpath $(path_of $UCOMP) $UCOMPMAIN $MICRO >> $INTER || exit
     fi
 
-    kotlin -classpath $(path_of $WEAVER) $WEAVERMAIN $INTER $OUTPUT || exit
+    kotlin -classpath $(path_of $WEAVER) $WEAVERMAIN $INTER $OUTPUT $VERILOG || exit
 else
     if [ "$MICRO" != "" ]; then
         kotlin -classpath $(path_of $UCOMP) $UCOMPMAIN $MICRO >> $INTER || exit
     fi
-    kotlin -classpath $(path_of $WEAVERJAR) $WEAVERMAIN $INTER $COMBINE $OUTPUT || exit
+    kotlin -classpath $(path_of $WEAVERJAR) $WEAVERMAIN $INTER $COMBINE $OUTPUT $VERILOG || exit
 fi
 
 # Remove intermediate compilation file

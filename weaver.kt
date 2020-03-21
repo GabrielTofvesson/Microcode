@@ -18,49 +18,88 @@ class MachineState {
     var uSP: Byte = 0.toByte()        // SMyPC
     var lc: Byte = 0.toByte()         // LC
 
-    override fun toString(): String {
-        val builder = StringBuilder("PM:\n")
-        for(index in 0 until programMemory.size)
-            builder.append(index.toUHex()).append(": ").append(programMemory[index].toUHex()).append("\n")
+    override fun toString() = toString(false)
+    fun toString(verilog: Boolean): String {
+        val builder = StringBuilder()
+        if(!verilog) builder.append("PM:\n")
+        for(index in 0 until programMemory.size){
+            if(verilog) builder.append("initial PM[").append(index).append("] = 16'h")
+            else builder.append(index.toUHex()).append(": ")
+            builder.append(programMemory[index].toUHex())
+            if(verilog) builder.append(';')
+            builder.append("\n")
+        }
         
-        builder.append("\nMyM:\n")
-        for(index in 0 until microMemory.size)
-            builder.append(index.toUHex()).append(": ").append(microMemory[index].toShortUHex()).append("\n")
+        if(!verilog) builder.append("\nMyM:\n")
+        for(index in 0 until microMemory.size){
+            if(verilog) builder.append("assign uPM[").append(index).append("] = 25'h")
+            else builder.append(index.toUHex()).append(": ")
+            builder.append(microMemory[index].toShortUHex())
+            if(verilog) builder.append(';')
+            builder.append("\n")
+        }
 
-        builder.append("\nK1:\n")
-        for(index in 0 until k1.size)
-            builder.append(index.toUHex()).append(": ").append(k1[index].toUHex()).append("\n")
+        if(!verilog) builder.append("\nK1:\n")
+        for(index in 0 until k1.size){
+            if(verilog) builder.append("assign K1[").append(index).append("] = 7'h")
+            else builder.append(index.toUHex()).append(": ")
+            builder.append(k1[index].toUHex())
+            if(verilog) builder.append(';')
+            builder.append("\n")
+        }
         
-        builder.append("\nK2:\n")
-        for(index in 0 until k2.size)
-            builder.append(index.toUHex()).append(": ").append(k2[index].toUHex()).append("\n")
+        if(!verilog) builder.append("\nK2:\n")
+        for(index in 0 until k2.size){
+            if(verilog) builder.append("assign K2[").append(index).append("] = 7'h")
+            else builder.append(index.toUHex()).append(": ")
+            builder.append(k2[index].toUHex())
+            if(verilog) builder.append(';')
+            builder.append("\n")
+        }
         
+        fun StringBuilder.regSet(name: String, value: Short) =
+            if(verilog) append("initial ").append(name).append(" = ").append(value).append(";\n")
+            else append('\n').append(name).append(":\n").append(value.toUHex())
+
+        fun StringBuilder.regSet(name: String, value: Byte) =
+            if(verilog) append("initial ").append(name).append(" = ").append(value).append(";\n")
+            else append('\n').append(name).append(":\n").append(value.toUHex())
+
+        fun StringBuilder.grSet(index: Int, value: Short) =
+            if(verilog) append("initial GR[").append(index).append("] = ").append(value).append(";\n")
+            else regSet("GR"+index, value)
+
+        fun StringBuilder.irSet(value: Byte) =
+            if(verilog) append("initial IR = ").append(value).append(";\n")
+            else append("\nIR:\nb").append(value.toInt().or(1 shl 30).toString(2).substring(28))
+
+        fun StringBuilder.uPCSet(value: Byte) =
+            if(verilog) append("initial uPC = ").append(value).append(";\n")
+            else append("\n\nMyPC:\n").append(value.toUHex())
+
+        fun StringBuilder.uSPSet(value: Byte) =
+            if(verilog) append("initial uSP = ").append(value).append(";\n")
+            else append("\n\nSMyPC:\n").append(value.toUHex())
+
+        fun StringBuilder.flagInit() =
+            if(verilog) this
+            else append("\n\nO_flag:\n\nC_flag:\n\nN_flag:\n\nZ_flag:\n\nL_flag:\nEnd_of_dump_file")
+
         return builder
-            .append("\nPC:\n")
-            .append(pc.toUHex())
-            .append("\n\nASR:\n")
-            .append(asr.toUHex())
-            .append("\n\nAR:\n")
-            .append(ar.toUHex())
-            .append("\n\nHR:\n")
-            .append(hr.toUHex())
-            .append("\n\nGR0:\n")
-            .append(gr0.toUHex())
-            .append("\n\nGR1:\n")
-            .append(gr1.toUHex())
-            .append("\n\nGR2:\n")
-            .append(gr2.toUHex())
-            .append("\n\nGR3:\n")
-            .append(gr3.toUHex())
-            .append("\n\nIR:\nb")
-            .append(ir.toInt().or(1 shl 30).toString(2).substring(28))
-            .append("\n\nMyPC:\n")
-            .append(uPC.toUHex())
-            .append("\n\nSMyPC:\n")
-            .append(uSP.toUHex())
-            .append("\n\nLC:\n")
-            .append(lc.toUHex())
-            .append("\n\nO_flag:\n\nC_flag:\n\nN_flag:\n\nZ_flag:\n\nL_flag:\nEnd_of_dump_file")
+            .regSet("PC", pc)
+            .regSet("ASR", asr)
+            .regSet("AR", ar)
+            .regSet("HR", hr)
+            .grSet(0, gr0)
+            .grSet(1, gr1)
+            .grSet(2, gr2)
+            .grSet(3, gr3)
+            .regSet("AR", ar)
+            .irSet(ir)
+            .uPCSet(uPC)
+            .uSPSet(uSP)
+            .append('\n').regSet("LC", lc)
+            .flagInit()
             .toString()
     }
 
@@ -110,7 +149,7 @@ fun error(message: String){
 }
 
 fun main(args: Array<String>){
-    if(args.size > 3) error("Too many arguments!")
+    if(args.size > 4) error("Too many arguments!")
     if(args.size < 2) error("Too few arguments!")
     
     val weaveFile = File(args[0])
@@ -118,12 +157,14 @@ fun main(args: Array<String>){
 
     val state: MachineState
 
-    if(args.size == 2) state = MachineState()
+    val verilogOutput = args[args.size - 1] == "-v"
+
+    if(args.size == 2 || (verilogOutput && args.size == 3)) state = MachineState()
     else{
         val file = File(args[1])
         if(file.isFile) state = MachineState.parseState(file.readText())
         else{
-            error("Machine state file (${args[1]}) doesn't exist!")
+            System.err.println("Machine state file (${args[1]}) doesn't exist! Starting from scratch...")
             state = MachineState()
         }
     }
@@ -196,13 +237,16 @@ fun main(args: Array<String>){
         iIdx()
     }
 
-    val outputFile = if(args.size == 3) File(args[2]) else File(args[1])
+    val outputFile = if(!verilogOutput && args.size == 3) File(args[2]) else File(args[1])
     if(outputFile.isFile) outputFile.delete()
     outputFile.createNewFile()
 
 
-    val machineData = state.toString()
-    outputFile.bufferedWriter().use{ it.write(machineData, 0, machineData.length) }
+    val machineData = state.toString(verilogOutput)
+    outputFile.bufferedWriter().use{
+        it.write(machineData, 0, machineData.length)
+        it.flush()
+    }
 }
 
 fun Short.toUHex() = toInt().and(0xFFFF.toInt()).or(1.shl(30)).toString(16).substring(4)
