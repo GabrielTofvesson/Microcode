@@ -15,7 +15,7 @@ Move value in *regA* to *regB*
 
 *This operation uses the bus*
 
-*If regB is [LC](#lc), no other [LC](#lc) operation can be specified in the
+*If regB is [**LC**](#lc), no other [**LC**](#lc) operation can be specified in the
 same cycle*
 
 
@@ -31,7 +31,7 @@ Move the inverse of a value (from register or constant) into register
 ### MVZ
 Set [**AR**](#ar) to zero.
 
-*Sets flags: [Z](#z), [N](#n)*
+*Sets flags: [**Z**](#z), [**N**](#n)*
 
 
 ### ADD {[reg] | [const]}
@@ -41,7 +41,7 @@ Add value (from register or constant) to register [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n), [O](#o), [C](#c)*
+*Sets flags: [**Z**](#z), [**N**](#n), [**O**](#o), [**C**](#c)*
 
 
 ### SUB {[reg] | [const]}
@@ -51,7 +51,7 @@ Subtract value (from register or constant) from register [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n), [O](#o), [C](#c)*
+*Sets flags: [**Z**](#z), [**N**](#n), [**O**](#o), [**C**](#c)*
 
 
 ### AND {[reg] | [const]}
@@ -63,7 +63,7 @@ expect it to be removed in future releases.
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n)*
+*Sets flags: [**Z**](#z), [**N**](#n)*
 
 
 ### ORR {[reg] | [const]}
@@ -74,7 +74,7 @@ Perform bitwise Or with given value (from register or constant) and register
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n)*
+*Sets flags: [**Z**](#z), [**N**](#n)*
 
 
 
@@ -94,7 +94,7 @@ Performs a logical shift left of [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n), [C](#c)*
+*Sets flags: [**Z**](#z), [**N**](#n), [**C**](#c)*
 
 
 ### ISL
@@ -106,7 +106,7 @@ most-significant bits.
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n), [C](#c)*
+*Sets flags: [**Z**](#z), [**N**](#n), [**C**](#c)*
 
 
 ### ASR
@@ -116,7 +116,7 @@ Performs an arithmetic shift right on [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n), [C](#c)*
+*Sets flags: [**Z**](#z), [**N**](#n), [**C**](#c)*
 
 
 ### ISR
@@ -128,7 +128,7 @@ most-significant bits.
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n), [C](#c)*
+*Sets flags: [**Z**](#z), [**N**](#n), [**C**](#c)*
 
 
 ### LSR
@@ -138,7 +138,7 @@ Performs a logical shift right of [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n), [C](#c)*
+*Sets flags: [**Z**](#z), [**N**](#n), [**C**](#c)*
 
 
 ### ROL
@@ -148,7 +148,7 @@ Performs an arithmetic rotate right on [**AR**](#ar).
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n), [C](#c)*
+*Sets flags: [**Z**](#z), [**N**](#n), [**C**](#c)*
 
 
 ### IRL
@@ -160,7 +160,7 @@ most-significant bits.
 
 *If a constant is passed, this operation cannot be parallellized*
 
-*Sets flags: [Z](#z), [N](#n), [C](#c)*
+*Sets flags: [**Z**](#z), [**N**](#n), [**C**](#c)*
 
 
 ### LCSET [const]
@@ -191,7 +191,7 @@ Move value in [**uSP**](#usp) into [**uPC**](#upc).
 
 
 ### HALT
-Stop execution and set value in [**uPC**](#upc) to 0.
+Stop execution and set value in [**uPC**](#upc) to **0**.
 
 
 ### BRA [label]
@@ -199,39 +199,39 @@ Perform an unconditional branch to the address of the given label.
 
 
 ### BNZ [label]
-Branch to address of label if [**Z-flag**](#z) is 0.
+Branch to address of label if [**Z-flag**](#z) is **0**.
 
 
 ### BRZ [label]
-Branch to address of label if [**Z-flag**](#z) is 1.
+Branch to address of label if [**Z-flag**](#z) is **1**.
 
 
 ### BRN [label]
-Branch to address of label if [**N-flag**](#n) is 1.
+Branch to address of label if [**N-flag**](#n) is **1**.
 
 
 ### BRC [label]
-Branch to address of label if [**C-flag**](#c) is 1.
+Branch to address of label if [**C-flag**](#c) is **1**.
 
 
 ### BRO [label]
-Branch to address of label if [**O-flag**](#o) is 1.
+Branch to address of label if [**O-flag**](#o) is **1**.
 
 
 ### BLS [label]
-Branch to address of label if [**L-flag**](#l) is 1.
+Branch to address of label if [**L-flag**](#l) is **1**.
 
 
 ### BNC [label]
-Branch to address of label if [**C-flag**](#c) is 0.
+Branch to address of label if [**C-flag**](#c) is **0**.
 
 
 ### BNO [label]
-Branch to address of label if [**O-flag**](#o) is 0.
+Branch to address of label if [**O-flag**](#o) is **0**.
 
 
 ### BOP
-Branch to address specified by entry in optable pointed to by highest 4 bits
+Branch to address specified by entry in optable pointed to by highest **4** bits
 in [**IR**](#ir).
 
 
@@ -241,11 +241,11 @@ Branch to address specified by entry in addressing mode pointed to by M-bits in
 
 
 ### BST
-Branch to start. This sets value in [**uPC**](#upc) to 0.
+Branch to start. This sets value in [**uPC**](#upc) to **0**.
 
 
 ### RESET [reg]
-Sets all bits in the specified register to 1.
+Sets all bits in the specified register to **1**.
 
 *This operation uses the bus*
 
@@ -276,7 +276,7 @@ functionally indistinguishable to the compiler.
 
 
 ### \#optable \[index] {[label] | [const]}
-Declare an entry in the opcode jump table (K1).
+Declare an entry in the opcode jump table (**K1**).
 
 **NOTE**: The given index must be at most 15 and at least 0 and in the case of
 a constant being supplied as the value, this value my not be negative nor be
@@ -284,7 +284,7 @@ greater than 127.
 
 
 ### \#amode \[index] {[label] | [const]}
-Declare an entry in the addressing mode jump table (K2).
+Declare an entry in the addressing mode jump table (**K2**).
 
 **NOTE**: The given index must be at most 3 and at least 0 and in the case of
 a constant being supplied as the value, this value my not be negative nor be
@@ -318,21 +318,25 @@ mov ar asr
 sub gr
 ```
 
-the above code will be converted in the the following code by the preprocessor:
+the above code will be converted into the the following code by the preprocessor:
 
 ```
 mov ar asr
 lsl; mov ar ir
+add pm
 lsl; mov ar ir
+add pm
 lsl; mov ar ir
+add pm
 lsl; mov ar ir
+add pm
 sub gr
 ```
 
 
 ## Flags
-Flags - *aside from [L](#l)* - are set based on ALU operations, so they depend
-on [**AR*](#ar)* and the **BUS**. Henceforth, unless otherwise implied or
+Flags - *aside from [**L**](#l)* - are set based on ALU operations, so they depend
+on [**AR**](#ar) and the **BUS**. Henceforth, unless otherwise implied or
 stated, [**AR**](#ar) will refer to the state/value of [**AR**](#ar) *after* an
 ALU operation. Flags retain their state until an instruction which is declared
 as modifying said flag is executed.
@@ -352,7 +356,7 @@ Set if [**AR**](#ar) is less than or equal to [**AR**](#ar) *before* the
 arithmetic operation.
 
 ### L
-Set if [**LC**](#lc) == 0.
+Set if [**LC**](#lc) == **0**.
 
 
 ## Registers
@@ -464,7 +468,7 @@ Pros:
 Cons:
 * N/A
 
-Average cycle count: N/A
+**Average cycle count: N/A**
 
 
 ### bsrt.uc
@@ -488,7 +492,7 @@ Cons:
 * Heavy bookkeeping due to lookup table paired with parallel-hash
 * Inefficiency in merge due to lookup table (average loss of 80 cycles)
 
-Average cycle count: 1250
+**Average cycle count: 1250**
 
 
 ### sort2.uc
@@ -516,7 +520,7 @@ Cons:
 * Two merge operations required (negative + positive)
 * 95 unused program-memory addresses
 
-Average cycle count: 1100
+**Average cycle count: 1100**
 
 
 ### sort3.uc
@@ -537,7 +541,7 @@ Cons:
 * Non-constant-time merge
 * Optimized LUT requires marginally more arithmetic operations over other variants
 
-Average cycle count: N/A (not fully implemented)
+**Average cycle count: N/A (not fully implemented)**
 
 
 ### bsrt2.uc
@@ -557,7 +561,7 @@ Pros:
 Cons:
 * Only sorts one element per iteration
 
-Average cycle count: 1050
+**Average cycle count: 1050**
 
 
 ### sort4.uc
@@ -588,4 +592,4 @@ Cons:
 * Maximum of 6 elements per bucket
 * 96 unused program-memory addresses (+1 per bucket)
 
-Average cycle count: 758
+**Average cycle count: 758**
