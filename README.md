@@ -384,14 +384,25 @@ The help register. This is a general-purpose register which is useful for
 storing ephemeral or intermediate values during a computation.
 
 ### IR
-The instruction register. This register offers extra functionality such as K1-
-and K2-table addressing via the OP and M bits respectively. The GRx and M bits
-can also be used to address a specific general register via the GR multiplexer
-(see [**GR**](#gr)).
+The instruction register. This register offers extra functionality such as
+**K1**- and **K2**-table addressing via the **OP** and **M** bits respectively.
+The **GRx** and **M** bits can also be used to address a specific general
+register via the **GR** multiplexer (see [**GR**](#gr)).
+
+The bit-level layout of IR (from MSB to LSB) is as follows:
+
+* **OP** : 4 bits (machine instruction). Can be used to jump to a
+microinstruction address given by **K1** at the index specified by **OP**
+
+* **GRx**: 2 bits (GR multiplexer selector)
+
+* **M**  : 2 bits (Addressing mode)
+
+* **ADR**: 8 bits (ASR address argument)
 
 ### GR
 This is a shorthand for accessing the general register currently made available
-by the GR multiplexer when said MUX is controlled by the GRx bits in
+by the GR multiplexer when said MUX is controlled by the **GRx** bits in
 [**IR**](#ir).
 
 **NOTE**: Only one GR can be accessed per cycle. Which register this is (of
@@ -399,7 +410,7 @@ the four available registers) is determined by the value in [**IR**](#ir).
 
 ### GRM
 This is a shorthand for accessing the general register currently made available
-by the GR multiplexer when said MUX is controlled by the M bits in
+by the GR multiplexer when said MUX is controlled by the **M** bits in
 [**IR**](#ir).
 
 **NOTE**: Only one GR can be accessed per cycle. Which register this is (of
